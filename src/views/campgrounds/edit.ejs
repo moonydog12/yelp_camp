@@ -1,0 +1,110 @@
+<% layout('/layouts/boilerplate') %>
+<h1>Edit Campground</h1>
+
+<div class="row">
+  <h2 class="text-center"></h2>
+  <div class="col-6 offset-3">
+    <form method="post">
+      <div class="mb-3">
+        <label class="form-label" for="title">Title</label>
+        <input
+          class="form-control"
+          type="text"
+          id="title"
+          name="campground[title]"
+          value="<%= campground.title %>"
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="location">Location</label>
+        <input
+          class="form-control"
+          type="text"
+          id="location"
+          name="campground[location]"
+          value="<%= campground.location %>"
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="image">Image url</label>
+        <input
+          class="form-control"
+          type="text"
+          id="image"
+          name="campground[image]"
+          value="<%= campground.image %>"
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="price">Campground price</label>
+
+        <div class="input-group">
+          <span class="input-group-text" id="price-label">$</span>
+          <input
+            type="text"
+            class="form-control"
+            id="price"
+            placeholder="0"
+            aria-describedby="price-label"
+            value="<%= campground.price %>"
+          />
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="description">Description</label>
+        <textarea
+          class="form-control"
+          id="description"
+          name="campground[description]"
+          rows="3"
+        >
+<%= campground.description %></textarea
+        >
+      </div>
+
+      <div class="mb-3">
+        <button class="updateBtn">Update campground</button>
+      </div>
+    </form>
+
+    <a href="/campgrounds/<%= campground.id %>">Back to campground</a>
+  </div>
+</div>
+
+<script>
+  const url = 'http://localhost:3000/campgrounds/<%= campground.id %>'
+  const updateButton = document.querySelector('.updateBtn')
+
+  updateButton.addEventListener('click', async (e) => {
+    e.preventDefault()
+    const title = document.getElementById('title').value
+    const location = document.getElementById('location').value
+    const image = document.getElementById('image').value
+    const price = document.getElementById('price').value
+    const description = document.getElementById('description').value
+    const formData = { title, location, image, price, description }
+    try {
+      const response = await fetch(url, {
+        method: 'put',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (response.status === 200) {
+        // Request was successful, navigate to the updated campground's page
+        window.location.href = response.url
+      } else {
+        // Handle other response statuses or errors as needed
+        console.error('Error:', response.status)
+      }
+    } catch (error) {
+      console.error('Fetch error:', error)
+    }
+  })
+</script>

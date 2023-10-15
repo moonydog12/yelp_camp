@@ -1,0 +1,49 @@
+<% layout('/layouts/boilerplate') %>
+<div class="row">
+  <div class="col-6 offset-3">
+    <div class="card mb-3">
+      <img src="<%= campground.image %>" class="card-img-top" alt="" />
+      <div class="card-body">
+        <h5 class="card-title"><%= campground.title %></h5>
+        <p class="card-text"><%= campground.description %></p>
+      </div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item text-muted"><%= campground.location %></li>
+        <li class="list-group-item">$<%= campground.price %>/night</li>
+      </ul>
+      <div class="card-body">
+        <a
+          class="card-link btn btn-info"
+          href="/campgrounds/<%= campground.id %>/edit"
+          >Edit</a
+        >
+        <a class="card-link btn btn-danger deleteBtn">Delete</a>
+      </div>
+
+      <div class="card-footer text-muted"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const deleteButton = document.querySelector('.deleteBtn')
+  const url = 'http://localhost:3000/campgrounds/<%= campground.id %>'
+
+  deleteButton.addEventListener('click', async () => {
+    try {
+      const response = await fetch(url, {
+        method: 'delete',
+      })
+
+      if (response.status === 200) {
+        // Request was successful, navigate to the updated campground's page
+        window.location.href = '/campgrounds/'
+      } else {
+        // Handle other response statuses or errors as needed
+        console.error('Error:', response.status)
+      }
+    } catch (error) {
+      console.error('Fetch error:', error)
+    }
+  })
+</script>
