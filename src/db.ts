@@ -1,8 +1,8 @@
-import { DataSource } from 'typeorm'
-import { Campground } from './seeds/Campground'
-import dotenv from 'dotenv'
+import { DataSource } from 'typeorm';
+import { Campground } from './seeds/Campground';
+import dotenv from 'dotenv';
 
-dotenv.config()
+dotenv.config();
 
 const db = new DataSource({
   type: 'postgres',
@@ -14,6 +14,6 @@ const db = new DataSource({
   synchronize: true,
   logging: false,
   entities: [Campground],
-})
+});
 
-export default db
+export default db;
