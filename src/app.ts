@@ -1,11 +1,12 @@
 // Global dependencies
 import express from 'express';
 import path from 'path';
-import db from './db';
-import { Campground } from './seeds/Campground';
 import { json } from 'body-parser';
 import { v4 as uuidv4 } from 'uuid';
 import ejsMate from 'ejs-mate';
+
+import { Campground } from './seeds/Campground';
+import db from './db';
 
 // 連接 DB
 try {
@@ -77,7 +78,6 @@ app.put('/campgrounds/:id', async (req, res) => {
     // Redirect to the updated campground's page
     res.send('success');
   } catch (error) {
-    console.error('Error:', error);
     res.status(500).send('Internal Server Error');
   }
 });

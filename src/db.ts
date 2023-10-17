@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
-import { Campground } from './seeds/Campground';
 import dotenv from 'dotenv';
+import { Campground } from './seeds/Campground';
 
 dotenv.config();
 
