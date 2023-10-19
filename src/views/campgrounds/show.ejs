@@ -26,24 +26,24 @@
 </div>
 
 <script>
-  const deleteButton = document.querySelector('.deleteBtn')
-  const url = 'http://localhost:3000/campgrounds/<%= campground.id %>'
+  const deleteButton = document.querySelector('.deleteBtn');
+  const url = 'http://localhost:3000/campgrounds/<%= campground.id %>';
 
   deleteButton.addEventListener('click', async () => {
     try {
       const response = await fetch(url, {
         method: 'delete',
-      })
+      });
 
       if (response.status === 200) {
         // Request was successful, navigate to the updated campground's page
-        window.location.href = '/campgrounds/'
+        window.location.href = '/campgrounds/';
       } else {
         // Handle other response statuses or errors as needed
-        console.error('Error:', response.status)
+        console.error('Error:', response.status);
       }
     } catch (error) {
-      console.error('Fetch error:', error)
+      console.error('Fetch error:', error);
     }
-  })
+  });
 </script>

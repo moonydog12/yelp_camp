@@ -1,5 +1,5 @@
 // Global dependencies
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import { json } from 'body-parser';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,24 +24,28 @@ app.set('views', path.join(__dirname, 'views'));
 
 app.use(json());
 
-app.get('/', (_req, res) => {
+app.get('/', (req, res) => {
   res.render('home');
 });
 
-app.get('/campgrounds', async (_req, res) => {
+app.get('/campgrounds', async (req, res) => {
   const allCampgrounds = await campgroundRepository.find();
   res.render('campgrounds/index', { campgrounds: allCampgrounds });
 });
 
-app.get('/campgrounds/new', (_req, res) => {
+app.get('/campgrounds/new', (req, res) => {
   res.render('campgrounds/new');
 });
 
-app.post('/campgrounds/new', async (req, res) => {
-  const id = uuidv4();
-  const campground = { ...req.body, id };
-  const createdCampground = await campgroundRepository.save(campground);
-  res.redirect(`/campgrounds/${createdCampground.id}`);
+app.post('/campgrounds', async (req, res, next) => {
+  try {
+    const id = uuidv4();
+    const campground = { ...req.body, id };
+    const createdCampground = await campgroundRepository.save(campground);
+    res.status(200).send({ createdCampground });
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.get('/campgrounds/:id', async (req, res) => {
@@ -64,7 +68,7 @@ app.put('/campgrounds/:id', async (req, res) => {
     const campgroundUpdate = await campgroundRepository.findOneBy({ id });
 
     if (!campgroundUpdate) {
-      return res.send('fail');
+      throw new Error('找不到該筆資料');
     }
 
     campgroundUpdate.title = title;
@@ -87,7 +91,7 @@ app.delete('/campgrounds/:id', async (req, res) => {
   try {
     const campgroundToRemove = await campgroundRepository.findOneBy({ id });
     if (!campgroundToRemove) {
-      return res.send('fail');
+      throw new Error('找不到該筆資料');
     }
     await campgroundRepository.remove(campgroundToRemove);
     res.send('success');
@@ -95,5 +99,11 @@ app.delete('/campgrounds/:id', async (req, res) => {
     console.log(error);
   }
 });
+
+app.use(
+  (err: ErrorConstructor, req: Request, res: Response, next: NextFunction) => {
+    res.send('Oh boy something went wrong');
+  },
+);
 
 export default app;
