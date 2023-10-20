@@ -17,7 +17,7 @@
           href="/campgrounds/<%= campground.id %>/edit"
           >Edit</a
         >
-        <a class="card-link btn btn-danger deleteBtn">Delete</a>
+        <button class="card-link btn btn-danger deleteBtn">Delete</button>
       </div>
 
       <div class="card-footer text-muted"></div>
@@ -27,20 +27,18 @@
 
 <script>
   const deleteButton = document.querySelector('.deleteBtn');
+  const basicUrl = 'http://localhost:3000/campgrounds/';
   const url = 'http://localhost:3000/campgrounds/<%= campground.id %>';
 
-  deleteButton.addEventListener('click', async () => {
+  deleteButton.addEventListener('click', async (e) => {
+    e.preventDefault();
     try {
       const response = await fetch(url, {
         method: 'delete',
       });
 
-      if (response.status === 200) {
-        // Request was successful, navigate to the updated campground's page
-        window.location.href = '/campgrounds/';
-      } else {
-        // Handle other response statuses or errors as needed
-        console.error('Error:', response.status);
+      if (response.ok) {
+        window.location = basicUrl;
       }
     } catch (error) {
       console.error('Fetch error:', error);

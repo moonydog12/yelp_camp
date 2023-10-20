@@ -7,6 +7,8 @@ import ejsMate from 'ejs-mate';
 
 import { Campground } from './seeds/Campground';
 import db from './db';
+import catchAsync from './utils/catchAsync';
+import ExpressError from './utils/ExpressError';
 
 // 連接 DB
 try {
@@ -37,16 +39,15 @@ app.get('/campgrounds/new', (req, res) => {
   res.render('campgrounds/new');
 });
 
-app.post('/campgrounds', async (req, res, next) => {
-  try {
+app.post(
+  '/campgrounds',
+  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const id = uuidv4();
     const campground = { ...req.body, id };
-    const createdCampground = await campgroundRepository.save(campground);
-    res.status(200).send({ createdCampground });
-  } catch (error) {
-    next(error);
-  }
-});
+    const newCampground = await campgroundRepository.save(campground);
+    res.send({ newCampground });
+  }),
+);
 
 app.get('/campgrounds/:id', async (req, res) => {
   const { id } = req.params;
@@ -79,14 +80,13 @@ app.put('/campgrounds/:id', async (req, res) => {
 
     await campgroundRepository.save(campgroundUpdate);
 
-    // Redirect to the updated campground's page
     res.send('success');
   } catch (error) {
     res.status(500).send('Internal Server Error');
   }
 });
 
-app.delete('/campgrounds/:id', async (req, res) => {
+app.delete('/campgrounds/:id', async (req, res, next) => {
   const { id } = req.params;
   try {
     const campgroundToRemove = await campgroundRepository.findOneBy({ id });
@@ -94,16 +94,19 @@ app.delete('/campgrounds/:id', async (req, res) => {
       throw new Error('找不到該筆資料');
     }
     await campgroundRepository.remove(campgroundToRemove);
-    res.send('success');
+    res.send({ campgroundToRemove });
   } catch (error) {
-    console.log(error);
+    next(error);
   }
 });
 
-app.use(
-  (err: ErrorConstructor, req: Request, res: Response, next: NextFunction) => {
-    res.send('Oh boy something went wrong');
-  },
-);
+app.all('*', (req, res, next) => {
+  next(new ExpressError('Page not Found', 400));
+});
+
+app.use((err, req: Request, res: Response, next: NextFunction) => {
+  const { statusCode = 500, message = 'test' } = err;
+  res.status(statusCode).send(message);
+});
 
 export default app;

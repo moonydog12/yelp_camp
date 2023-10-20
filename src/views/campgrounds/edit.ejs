@@ -85,7 +85,7 @@
   const updateButton = document.querySelector('.updateBtn');
 
   updateButton.addEventListener('click', async (e) => {
-    // e.preventDefault();
+    e.preventDefault();
     const title = document.getElementById('title').value;
     const location = document.getElementById('location').value;
     const image = document.getElementById('image').value;
@@ -101,12 +101,8 @@
         body: JSON.stringify(formData),
       });
 
-      if (response.status === 200) {
-        // Request was successful, navigate to the updated campground's page
-        window.location.href = response.url;
-      } else {
-        // Handle other response statuses or errors as needed
-        console.error('Error:', response.status);
+      if (response.ok) {
+        window.location = url;
       }
     } catch (error) {
       console.error('Fetch error:', error);
