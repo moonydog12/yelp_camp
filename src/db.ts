@@ -4,16 +4,24 @@ import { Campground } from './seeds/Campground';
 
 dotenv.config();
 
-const db = new DataSource({
+const database = new DataSource({
   type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'postgres',
-  password: process.env.DB_PASSWORD,
-  database: 'Yelp-Camp',
-  synchronize: true,
-  logging: false,
+  host: process.env.PG_HOST,
+  port: parseInt(process.env.PG_PORT || '5432'),
+  username: process.env.PG_USERNAME,
+  password: process.env.PG_PASSWORD,
+  database: process.env.PG_DATABASE,
   entities: [Campground],
+  synchronize: true, // ! remove in prod
 });
 
-export default db;
+const connectToDB = async () => {
+  try {
+    await database.initialize();
+    console.log('Connected to PostgreSQL');
+  } catch (error) {
+    console.log(`Unable to connect to PostgreSQL (${error.message}) `);
+  }
+};
+
+export { connectToDB, database };

@@ -4,7 +4,12 @@
 <div class="row">
   <h2 class="text-center"></h2>
   <div class="col-6 offset-3">
-    <form method="put" novalidate class="validated-form">
+    <form
+      novalidate
+      class="validated-form"
+      method="post"
+      action="/campgrounds/<%=campground.id%>?_method=PUT"
+    >
       <div class="mb-3">
         <label class="form-label" for="title">Title</label>
         <input
@@ -52,6 +57,7 @@
             id="price"
             placeholder="0"
             aria-describedby="price-label"
+            name="campground[price]"
             value="<%= campground.price %>"
             required
           />
@@ -79,33 +85,3 @@
     <a href="/campgrounds/<%= campground.id %>">Back to campground</a>
   </div>
 </div>
-
-<script>
-  const url = 'http://localhost:3000/campgrounds/<%= campground.id %>';
-  const updateButton = document.querySelector('.updateBtn');
-
-  updateButton.addEventListener('click', async (e) => {
-    e.preventDefault();
-    const title = document.getElementById('title').value;
-    const location = document.getElementById('location').value;
-    const image = document.getElementById('image').value;
-    const price = document.getElementById('price').value;
-    const description = document.getElementById('description').value;
-    const formData = { title, location, image, price, description };
-    try {
-      const response = await fetch(url, {
-        method: 'put',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        window.location = url;
-      }
-    } catch (error) {
-      console.error('Fetch error:', error);
-    }
-  });
-</script>

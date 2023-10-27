@@ -6,17 +6,17 @@ export class Campground {
   id!: string;
 
   @Column({ length: 100 })
-  title!: string;
+  title: string;
 
   @Column()
-  price!: number;
+  price: number;
 
   @Column()
-  description!: string;
+  description: string;
 
   @Column()
-  location!: string;
+  location: string;
 
   @Column()
-  image!: string;
+  image: string;
 }

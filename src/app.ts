@@ -1,30 +1,30 @@
-// Global dependencies
 import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import { json } from 'body-parser';
 import { v4 as uuidv4 } from 'uuid';
 import ejsMate from 'ejs-mate';
+import dotenv from 'dotenv';
+import methodOverride from 'method-override';
 
 import { Campground } from './seeds/Campground';
-import db from './db';
+import { connectToDB, database } from './db';
 import catchAsync from './utils/catchAsync';
-import ExpressError from './utils/ExpressError';
+
+const campgroundRepository = database.getRepository(Campground);
+dotenv.config();
 
 // 連接 DB
-try {
-  db.initialize();
-} catch (error) {
-  console.log(error);
-}
+connectToDB();
 
-const campgroundRepository = db.getRepository(Campground);
 const app = express();
 
 app.engine('ejs', ejsMate);
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, '../src/views'));
 
 app.use(json());
+app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
 
 app.get('/', (req, res) => {
   res.render('home');
@@ -41,11 +41,11 @@ app.get('/campgrounds/new', (req, res) => {
 
 app.post(
   '/campgrounds',
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  catchAsync(async (req: Request, res: Response) => {
     const id = uuidv4();
-    const campground = { ...req.body, id };
-    const newCampground = await campgroundRepository.save(campground);
-    res.send({ newCampground });
+    const campground = { ...req.body.campground, id };
+    await campgroundRepository.save(campground);
+    res.redirect(`/campgrounds/${campground.id}`);
   }),
 );
 
@@ -63,24 +63,18 @@ app.get('/campgrounds/:id/edit', async (req, res) => {
 });
 
 app.put('/campgrounds/:id', async (req, res) => {
-  const { location, title, description, image, price } = req.body;
+  const { campground } = req.body;
   const { id } = req.params;
   try {
     const campgroundUpdate = await campgroundRepository.findOneBy({ id });
-
     if (!campgroundUpdate) {
       throw new Error('找不到該筆資料');
     }
-
-    campgroundUpdate.title = title;
-    campgroundUpdate.location = location;
-    campgroundUpdate.description = description;
-    campgroundUpdate.image = image;
-    campgroundUpdate.price = price;
-
+    for (const property in campground) {
+      campgroundUpdate[`${property}`] = campground[`${property}`];
+    }
     await campgroundRepository.save(campgroundUpdate);
-
-    res.send('success');
+    res.redirect(`/campgrounds/${id}`);
   } catch (error) {
     res.status(500).send('Internal Server Error');
   }
@@ -94,14 +88,10 @@ app.delete('/campgrounds/:id', async (req, res, next) => {
       throw new Error('找不到該筆資料');
     }
     await campgroundRepository.remove(campgroundToRemove);
-    res.send({ campgroundToRemove });
+    res.redirect('/campgrounds');
   } catch (error) {
     next(error);
   }
-});
-
-app.all('*', (req, res, next) => {
-  next(new ExpressError('Page not Found', 400));
 });
 
 app.use((err, req: Request, res: Response, next: NextFunction) => {
@@ -109,4 +99,6 @@ app.use((err, req: Request, res: Response, next: NextFunction) => {
   res.status(statusCode).send(message);
 });
 
-export default app;
+app.listen(process.env.PORT, () => {
+  console.log(`listening on port ${process.env.PORT}`);
+});
