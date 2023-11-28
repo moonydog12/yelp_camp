@@ -1,22 +1,22 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn } from 'typeorm'
 
 @Entity()
 export class Campground {
   @PrimaryColumn()
-  id!: string;
+  id!: string
 
   @Column({ length: 100 })
-  title: string;
+  title!: string
 
   @Column()
-  price: number;
+  price!: number
 
   @Column()
-  description: string;
+  description!: string
 
   @Column()
-  location: string;
+  location!: string
 
   @Column()
-  image: string;
+  image!: string
 }

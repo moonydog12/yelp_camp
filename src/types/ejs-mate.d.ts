@@ -1,1 +1,1 @@
-declare module 'ejs-mate';
+declare module 'ejs-mate'

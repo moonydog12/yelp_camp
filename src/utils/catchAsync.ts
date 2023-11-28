@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express'
 
-export default function catchAsync(func) {
+export default function catchAsync(func: Function) {
   return (req: Request, res: Response, next: NextFunction) => {
-    func(req, res, next).catch(next);
-  };
+    func(req, res, next).catch((error: any) => next(error))
+  }
 }
