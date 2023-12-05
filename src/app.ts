@@ -30,14 +30,13 @@ app.get('/', (req, res) => {
   res.render('home')
 })
 
-app.get('/campgrounds', async (req, res, next) => {
-  try {
+app.get(
+  '/campgrounds',
+  catchAsync(async (req: Request, res: Response) => {
     const allCampgrounds = await campgroundRepository.find()
     res.render('campgrounds/index', { campgrounds: allCampgrounds })
-  } catch (error) {
-    next(error)
-  }
-})
+  }),
+)
 
 app.get('/campgrounds/new', (req, res) => {
   res.render('campgrounds/new')
@@ -72,11 +71,13 @@ app.get(
   }),
 )
 
-app.put('/campgrounds/:id', async (req, res, next) => {
-  const { campground } = req.body
-  const { id } = req.params
-  try {
+app.put(
+  '/campgrounds/:id',
+  catchAsync(async (req: Request, res: Response) => {
+    const { campground } = req.body
+    const { id } = req.params
     const campgroundUpdate = await campgroundRepository.findOneBy({ id })
+
     if (!campgroundUpdate) {
       throw new Error('找不到該筆資料')
     }
@@ -84,29 +85,30 @@ app.put('/campgrounds/:id', async (req, res, next) => {
     for (const property in campground) {
       ;(campgroundUpdate as any)[`${property}`] = campground[`${property}`]
     }
+
     await campgroundRepository.save(campgroundUpdate)
     res.redirect(`/campgrounds/${id}`)
-  } catch (error) {
-    next(error)
-  }
-})
+  }),
+)
 
-app.delete('/campgrounds/:id', async (req, res, next) => {
-  const { id } = req.params
-  try {
+app.delete(
+  '/campgrounds/:id',
+  catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params
     const campgroundToRemove = await campgroundRepository.findOneBy({ id })
+
     if (!campgroundToRemove) {
       throw new Error('找不到該筆資料')
     }
+
     await campgroundRepository.remove(campgroundToRemove)
     res.redirect('/campgrounds')
-  } catch (error) {
-    next(error)
-  }
-})
+  }),
+)
 
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  const { statusCode = 500, message = 'test' } = err
+// express 會把有四個參數的 function視作錯誤處理中介
+app.use((err: any, req: Request, res: Response) => {
+  const { statusCode = 500, message = 'Something went wrong' } = err
   res.status(statusCode).send(message)
 })
 
