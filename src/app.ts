@@ -8,7 +8,9 @@ import methodOverride from 'method-override'
 
 import { Campground } from './seeds/Campground'
 import { connectToDB, database } from './db'
+import { campgroundSchema } from './schemas'
 import catchAsync from './utils/catchAsync'
+import ExpressError from './utils/ExpressError'
 
 const campgroundRepository = database.getRepository(Campground)
 dotenv.config()
@@ -25,6 +27,20 @@ app.set('views', path.join(__dirname, '../src/views'))
 app.use(json())
 app.use(express.urlencoded({ extended: true }))
 app.use(methodOverride('_method'))
+
+const validateCampground = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { error } = campgroundSchema.validate(req.body)
+  if (error) {
+    const errorMessages = error.details.map((el) => el.message).join(',')
+    throw new ExpressError(errorMessages, 400)
+  } else {
+    next()
+  }
+}
 
 app.get('/', (req, res) => {
   res.render('home')
@@ -44,6 +60,7 @@ app.get('/campgrounds/new', (req, res) => {
 
 app.post(
   '/campgrounds',
+  validateCampground,
   catchAsync(async (req: Request, res: Response) => {
     const id = uuidv4()
     const campground = { ...req.body.campground, id }
@@ -73,6 +90,7 @@ app.get(
 
 app.put(
   '/campgrounds/:id',
+  validateCampground,
   catchAsync(async (req: Request, res: Response) => {
     const { campground } = req.body
     const { id } = req.params
@@ -106,10 +124,17 @@ app.delete(
   }),
 )
 
+app.all('*', (req, res, next) => {
+  next(new ExpressError('沒有相關頁面', 404))
+})
+
 // express 會把有四個參數的 function視作錯誤處理中介
-app.use((err: any, req: Request, res: Response) => {
-  const { statusCode = 500, message = 'Something went wrong' } = err
-  res.status(statusCode).send(message)
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  const { statusCode = 500 } = err
+  if (!err.message) {
+    err.message = '出現錯誤了 🐛'
+  }
+  res.status(statusCode).render('error', { err })
 })
 
 app.listen(process.env.PORT, () => {
