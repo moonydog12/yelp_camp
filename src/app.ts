@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express'
 import path from 'path'
 import { json } from 'body-parser'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 import ejsMate from 'ejs-mate'
 import dotenv from 'dotenv'
 import methodOverride from 'method-override'
@@ -62,8 +62,8 @@ app.post(
   '/campgrounds',
   validateCampground,
   catchAsync(async (req: Request, res: Response) => {
-    const id = uuidv4()
-    const campground = { ...req.body.campground, id }
+    const id = randomUUID()
+    const campground = { id, ...req.body.campground }
     await campgroundRepository.save(campground)
     res.redirect(`/campgrounds/${campground.id}`)
   }),
