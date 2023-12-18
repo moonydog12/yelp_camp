@@ -1,18 +1,19 @@
 import express, { Request, Response, NextFunction } from 'express'
 import path from 'path'
 import { json } from 'body-parser'
-import { randomUUID } from 'crypto'
 import ejsMate from 'ejs-mate'
 import dotenv from 'dotenv'
 import methodOverride from 'method-override'
 
-import { Campground } from './seeds/Campground'
-import { connectToDB, database } from './db'
-import { campgroundSchema } from './schemas'
+import { Campground } from './models/Campground'
+import { Review } from './models/Review'
+import { connectToDB, dataSource } from './db'
+import { campgroundSchema, reviewSchema } from './schemas'
 import catchAsync from './utils/catchAsync'
 import ExpressError from './utils/ExpressError'
 
-const campgroundRepository = database.getRepository(Campground)
+const campgroundRepository = dataSource.getRepository(Campground)
+const reviewRepository = dataSource.getRepository(Review)
 dotenv.config()
 
 // 連接 DB
@@ -42,6 +43,16 @@ const validateCampground = (
   }
 }
 
+const validateReview = (req: Request, res: Response, next: NextFunction) => {
+  const { error } = reviewSchema.validate(req.body)
+  if (error) {
+    const errorMessages = error.details.map((el) => el.message).join(',')
+    throw new ExpressError(errorMessages, 400)
+  } else {
+    next()
+  }
+}
+
 app.get('/', (req, res) => {
   res.render('home')
 })
@@ -62,8 +73,7 @@ app.post(
   '/campgrounds',
   validateCampground,
   catchAsync(async (req: Request, res: Response) => {
-    const id = randomUUID()
-    const campground = { id, ...req.body.campground }
+    const campground = { ...req.body.campground }
     await campgroundRepository.save(campground)
     res.redirect(`/campgrounds/${campground.id}`)
   }),
@@ -73,7 +83,12 @@ app.get(
   '/campgrounds/:id',
   catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params
-    const campground = await campgroundRepository.findOneBy({ id })
+    const campground = await campgroundRepository
+      .createQueryBuilder('campground')
+      .leftJoinAndSelect('campground.reviews', 'reviews')
+      .where('campground.id = :id', { id })
+      .getOne()
+
     res.render('campgrounds/show', { campground })
   }),
 )
@@ -121,6 +136,41 @@ app.delete(
 
     await campgroundRepository.remove(campgroundToRemove)
     res.redirect('/campgrounds')
+  }),
+)
+
+app.post(
+  '/campgrounds/:id/reviews',
+  validateReview,
+  catchAsync(async (req: Request, res: Response) => {
+    const campground = await campgroundRepository.findOneBy({
+      id: req.params.id,
+    })
+
+    // 先確定 campground 不是空值(ts 2322 錯誤)
+    if (!campground) {
+      throw new Error('找不到該筆資料')
+    }
+
+    const review = { ...req.body.review }
+    const newReview = new Review()
+    newReview.body = review.body
+    newReview.rating = review.rating
+    newReview.campground = campground
+    await newReview.save()
+    res.redirect(`/campgrounds/${campground.id}`)
+  }),
+)
+
+app.delete(
+  '/campground/:id/reviews/:reviewId',
+  catchAsync(async (req: Request, res: Response) => {
+    const review = await reviewRepository.findOneBy({ id: req.params.reviewId })
+    if (!review) {
+      throw new Error('找不到該筆資料')
+    }
+    await reviewRepository.remove(review)
+    res.redirect(`/campgrounds/${req.params.id}`)
   }),
 )
 
