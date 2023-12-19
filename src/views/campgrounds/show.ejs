@@ -70,7 +70,7 @@
         <h5 class="card-title">Rating : <%= review.rating %></h5>
         <p class="card-text">Review : <%= review.body %></p>
         <form
-          action="/campground/<%= campground.id %>/reviews/<%= review.id %>?_method=DELETE"
+          action="/campgrounds/<%= campground.id %>/reviews/<%= review.id %>?_method=DELETE"
           method="post"
         >
           <button class="btn btn-sm btn-danger">X</button>
