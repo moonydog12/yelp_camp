@@ -41,6 +41,7 @@ router.post(
   catchAsync(async (req: Request, res: Response) => {
     const campground = { ...req.body.campground }
     await campgroundRepository.save(campground)
+    req.flash('success', 'Successfully made a new campground')
     res.redirect(`/campgrounds/${campground.id}`)
   }),
 )
@@ -54,6 +55,11 @@ router.get(
       .leftJoinAndSelect('campground.reviews', 'reviews')
       .where('campground.id = :id', { id })
       .getOne()
+
+    if (!campground) {
+      req.flash('error', 'Cannot find the campground')
+      res.redirect('/campgrounds')
+    }
 
     res.render('campgrounds/show', { campground })
   }),
@@ -86,6 +92,7 @@ router.put(
     }
 
     await campgroundRepository.save(campgroundUpdate)
+    req.flash('success', 'Successfully updated campground')
     res.redirect(`/campgrounds/${id}`)
   }),
 )
@@ -101,6 +108,7 @@ router.delete(
     }
 
     await campgroundRepository.remove(campgroundToRemove)
+    req.flash('success', 'Delete campground')
     res.redirect('/campgrounds')
   }),
 )

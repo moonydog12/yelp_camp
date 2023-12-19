@@ -43,6 +43,7 @@ router.post(
     newReview.rating = review.rating
     newReview.campground = campground
     await newReview.save()
+    req.flash('success', 'Create new review')
     res.redirect(`/campgrounds/${campground.id}`)
   }),
 )
@@ -51,11 +52,11 @@ router.delete(
   '/:reviewId',
   catchAsync(async (req: Request, res: Response) => {
     const review = await reviewRepository.findOneBy({ id: req.params.reviewId })
-    console.log(req.params)
     if (!review) {
       throw new Error('找不到該筆資料')
     }
     await reviewRepository.remove(review)
+    req.flash('success', 'Delete review')
     res.redirect(`/campgrounds/${req.params.id}`)
   }),
 )

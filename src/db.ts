@@ -19,7 +19,6 @@ const dataSource = new DataSource({
 const connectToDB = async () => {
   try {
     await dataSource.initialize()
-    console.log('Connected to PostgreSQL')
   } catch (error: any) {
     console.log(`Unable to connect to PostgreSQL (${error.message}) `)
   }
