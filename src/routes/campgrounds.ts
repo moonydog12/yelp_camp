@@ -3,7 +3,7 @@ import express, { Request, Response, NextFunction } from 'express'
 import catchAsync from '../utils/catchAsync'
 import { dataSource } from '../db'
 import { Campground } from '../models/Campground'
-import { campgroundSchema } from '../schemas'
+import { campgroundSchema } from '../models/schemas'
 import ExpressError from '../utils/ExpressError'
 
 const router = express.Router()

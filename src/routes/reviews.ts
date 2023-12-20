@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express'
 
 import { Review } from '../models/Review'
-import { reviewSchema } from '../schemas'
+import { reviewSchema } from '../models/schemas'
 import ExpressError from '../utils/ExpressError'
 import catchAsync from '../utils/catchAsync'
 import { dataSource } from '../db'
