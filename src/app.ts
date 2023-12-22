@@ -1,19 +1,19 @@
-import express, { Request, Response, NextFunction } from 'express'
+import express from 'express'
 import path from 'path'
 import { json } from 'body-parser'
 import ejsMate from 'ejs-mate'
-import dotenv from 'dotenv'
 import methodOverride from 'method-override'
 import expressSession from 'express-session'
 import flash from 'connect-flash'
+import passport from 'passport'
 
-import { connectToDB } from './db'
 import { SESSION_OPTION } from './config'
 import ExpressError from './utils/ExpressError'
-import campgroundRoute from './routes/campgrounds'
-import reviewRoute from './routes/reviews'
-
-dotenv.config()
+import errorHandler from './middlewares/errorhandler'
+import setFlash from './middlewares/setFlash'
+import campgroundRoutes from './routes/campgrounds'
+import reviewRoutes from './routes/reviews'
+import userRoutes from './routes/users'
 
 // 設置 middleware
 const app = express()
@@ -27,35 +27,19 @@ app.use(methodOverride('_method'))
 app.use(express.static(path.join(__dirname, '../src/public')))
 app.use(expressSession(SESSION_OPTION))
 app.use(flash())
-
-app.use((req, res, next) => {
-  res.locals.success = req.flash('success')
-  res.locals.error = req.flash('error')
-  next()
-})
+app.use(setFlash)
+app.use(passport.initialize())
+app.use(passport.session())
 
 // 設置路由
-app.get('/', (req, res) => {
-  res.render('home')
-})
-
-app.use('/campgrounds', campgroundRoute)
-app.use('/campgrounds/:id/reviews', reviewRoute)
+app.use('/', userRoutes)
+app.use('/campgrounds', campgroundRoutes)
+app.use('/campgrounds/:id/reviews', reviewRoutes)
 
 app.all('*', (req, res, next) => {
   next(new ExpressError('沒有相關頁面', 404))
 })
 
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  // express 會把有四個參數的 function視作錯誤處理中介
-  const { statusCode = 500 } = err
-  if (!err.message) {
-    err.message = '出現錯誤了 🐛'
-  }
-  res.status(statusCode).render('error', { err })
-})
+app.use(errorHandler)
 
-app.listen(process.env.PORT, () => {
-  connectToDB()
-  console.log(`listening on port ${process.env.PORT}`)
-})
+export default app

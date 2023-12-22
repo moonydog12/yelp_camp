@@ -9,11 +9,7 @@ import ExpressError from '../utils/ExpressError'
 const router = express.Router()
 const campgroundRepository = dataSource.getRepository(Campground)
 
-const validateCampground = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+function validateCampground(req: Request, res: Response, next: NextFunction) {
   const { error } = campgroundSchema.validate(req.body)
   if (error) {
     const errorMessages = error.details.map((el) => el.message).join(',')
@@ -57,8 +53,7 @@ router.get(
       .getOne()
 
     if (!campground) {
-      req.flash('error', 'Cannot find the campground')
-      res.redirect('/campgrounds')
+      throw new Error('找不到該筆資料')
     }
 
     res.render('campgrounds/show', { campground })

@@ -8,13 +8,13 @@ import { dataSource } from '../db'
 import { Campground } from '../models/Campground'
 
 const router = express.Router({
-  // 取得定義在簡化前路由的參數
+  // 取得定義在之前路由的參數
   mergeParams: true,
 })
 const campgroundRepository = dataSource.getRepository(Campground)
 const reviewRepository = dataSource.getRepository(Review)
 
-const validateReview = (req: Request, res: Response, next: NextFunction) => {
+function validateReview(req: Request, res: Response, next: NextFunction) {
   const { error } = reviewSchema.validate(req.body)
   if (error) {
     const errorMessages = error.details.map((el) => el.message).join(',')
