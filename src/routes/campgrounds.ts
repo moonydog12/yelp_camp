@@ -5,6 +5,7 @@ import { dataSource } from '../db'
 import { Campground } from '../models/Campground'
 import { campgroundSchema } from '../models/schemas'
 import ExpressError from '../utils/ExpressError'
+import isLoggedIn from '../middlewares/isLoggedIn'
 
 const router = express.Router()
 const campgroundRepository = dataSource.getRepository(Campground)
@@ -27,13 +28,14 @@ router.get(
   }),
 )
 
-router.get('/new', (req, res) => {
+router.get('/new', isLoggedIn, (req, res) => {
   res.render('campgrounds/new')
 })
 
 router.post(
   '/',
   validateCampground,
+  isLoggedIn,
   catchAsync(async (req: Request, res: Response) => {
     const campground = { ...req.body.campground }
     await campgroundRepository.save(campground)
@@ -62,6 +64,7 @@ router.get(
 
 router.get(
   '/:id/edit',
+  isLoggedIn,
   catchAsync(async (req: Request, res: Response) => {
     const campground = await campgroundRepository.findOneBy({
       id: req.params.id,
