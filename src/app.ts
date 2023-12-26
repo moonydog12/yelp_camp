@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Request, Response, NextFunction } from 'express'
 import path from 'path'
 import { json } from 'body-parser'
 import ejsMate from 'ejs-mate'
@@ -7,16 +7,18 @@ import expressSession from 'express-session'
 import flash from 'connect-flash'
 import passport from 'passport'
 
-import { SESSION_OPTION } from './config'
 import ExpressError from './utils/ExpressError'
 import errorHandler from './middlewares/errorhandler'
-import setFlash from './middlewares/setFlash'
 import campgroundRoutes from './routes/campgrounds'
 import reviewRoutes from './routes/reviews'
 import userRoutes from './routes/users'
-import localStrategy from './middlewares/setPassport'
-import { User } from './models/User'
-import { dataSource } from './db'
+import {
+  localStrategy,
+  setDeserializeUser,
+  setSerializeUser,
+} from './middlewares/passport'
+import { SESSION_OPTION } from './config'
+import { setFlash } from './middlewares/auth'
 
 // 設置 middleware
 const app = express()
@@ -35,19 +37,12 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 passport.use(localStrategy)
+passport.serializeUser(setSerializeUser)
+passport.deserializeUser(setDeserializeUser)
 
-passport.serializeUser(function (user: any, done) {
-  done(null, user.id)
-})
-
-passport.deserializeUser(function (user: any, done) {
-  if (!user) return
-  dataSource
-    .getRepository(User)
-    .findOneBy({ id: user.id })
-    .then((user) => {
-      done(null, user)
-    })
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.locals.currentUser = req.user
+  next()
 })
 
 // 設置路由

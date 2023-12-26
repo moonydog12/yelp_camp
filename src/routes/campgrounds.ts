@@ -5,7 +5,7 @@ import { dataSource } from '../db'
 import { Campground } from '../models/Campground'
 import { campgroundSchema } from '../models/schemas'
 import ExpressError from '../utils/ExpressError'
-import isLoggedIn from '../middlewares/isLoggedIn'
+import { isLoggedIn } from '../middlewares/auth'
 
 const router = express.Router()
 const campgroundRepository = dataSource.getRepository(Campground)

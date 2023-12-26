@@ -25,4 +25,18 @@ const localStrategy = new LocalStrategy(
   },
 )
 
-export default localStrategy
+function setSerializeUser(user: any, done: CallableFunction) {
+  done(null, user.id)
+}
+
+function setDeserializeUser(user: any, done: CallableFunction) {
+  if (!user) return
+  dataSource
+    .getRepository(User)
+    .findOneBy({ id: user.id })
+    .then((user) => {
+      done(null, user)
+    })
+}
+
+export { localStrategy, setSerializeUser, setDeserializeUser }

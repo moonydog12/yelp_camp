@@ -4,10 +4,15 @@ import bcrypt from 'bcryptjs'
 
 import { dataSource } from '../db'
 import { User } from '../models/User'
+import { storeReturnTo } from '../middlewares/auth'
 import catchAsync from '../utils/catchAsync'
 
 const router = express.Router()
 const userRepository = dataSource.getRepository(User)
+const passportAuthConfig = {
+  failureRedirect: '/login',
+  failureMessage: true,
+}
 
 router.get('/login', async (req, res) => {
   res.render('auth/login')
@@ -15,14 +20,11 @@ router.get('/login', async (req, res) => {
 
 router.post(
   '/login',
-  passport.authenticate('local', {
-    failureRedirect: '/login',
-    failureFlash: true,
-    failureMessage: true,
-  }),
+  storeReturnTo,
+  passport.authenticate('local', passportAuthConfig),
   (req, res) => {
-    req.flash('success', 'welcome back')
-    res.redirect('/campgrounds')
+    const redirectUrl = res.locals.returnTo || '/campgrounds'
+    res.redirect(redirectUrl)
   },
 )
 
@@ -42,12 +44,19 @@ router.get('/register', (req, res) => {
 
 router.post(
   '/register',
-  catchAsync(async (req: Request, res: Response) => {
+  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     try {
       const salt = await bcrypt.genSalt(10)
       const hash = await bcrypt.hash(req.body.password, salt)
-      await userRepository.save({ ...req.body, password: hash })
-      res.redirect('/campgrounds')
+      const registerUser = await userRepository.save({
+        ...req.body,
+        password: hash,
+      })
+      req.logIn(registerUser, (error) => {
+        if (error) return next(error)
+        req.flash('success', 'Welcome to Yelp Camp')
+        res.redirect('/campgrounds')
+      })
     } catch (error: any) {
       req.flash('error', error.message)
       res.redirect('/register')
