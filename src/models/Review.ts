@@ -6,6 +6,7 @@ import {
   BaseEntity,
 } from 'typeorm'
 import Campground from './Campground'
+import User from './User'
 
 @Entity()
 export default class Review extends BaseEntity {
@@ -22,4 +23,7 @@ export default class Review extends BaseEntity {
     onDelete: 'CASCADE',
   })
     campground!: Campground
+
+  @ManyToOne(() => User, (user) => user.id)
+    author!: string
 }

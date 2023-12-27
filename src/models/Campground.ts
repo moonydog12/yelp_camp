@@ -4,8 +4,10 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
   BaseEntity,
+  ManyToOne,
 } from 'typeorm'
 import Review from './Review'
+import User from './User'
 
 @Entity()
 export default class Campground extends BaseEntity {
@@ -26,6 +28,9 @@ export default class Campground extends BaseEntity {
 
   @Column()
     image!: string
+
+  @ManyToOne(() => User, (user) => user.id)
+    author!: User
 
   @OneToMany(() => Review, (review) => review.campground)
     reviews!: Review[]

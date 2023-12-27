@@ -20,6 +20,23 @@ function validateCampground(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+async function isAuthor(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.params
+  const campground = await campgroundRepository
+    .createQueryBuilder('campground')
+    .leftJoin('campground.author', 'author')
+    .addSelect(['author.id'])
+    .where('campground.id = :id', { id })
+    .getOne()
+
+  if (campground?.author.id !== req.user?.id) {
+    req.flash('error', 'You do not have permission to do that')
+    return res.redirect(`/campgrounds/${id}`)
+  }
+
+  next()
+}
+
 router.get(
   '/',
   catchAsync(async (req: Request, res: Response) => {
@@ -38,6 +55,7 @@ router.post(
   isLoggedIn,
   catchAsync(async (req: Request, res: Response) => {
     const campground = { ...req.body.campground }
+    campground.author = req.user?.id
     await campgroundRepository.save(campground)
     req.flash('success', 'Successfully made a new campground')
     res.redirect(`/campgrounds/${campground.id}`)
@@ -51,6 +69,7 @@ router.get(
     const campground = await campgroundRepository
       .createQueryBuilder('campground')
       .leftJoinAndSelect('campground.reviews', 'reviews')
+      .leftJoinAndSelect('campground.author', 'author')
       .where('campground.id = :id', { id })
       .getOne()
 
@@ -65,24 +84,39 @@ router.get(
 router.get(
   '/:id/edit',
   isLoggedIn,
+  isAuthor,
   catchAsync(async (req: Request, res: Response) => {
-    const campground = await campgroundRepository.findOneBy({
-      id: req.params.id,
-    })
+    const { id } = req.params
+    const campground = await campgroundRepository.findOneBy({ id })
+    if (!campground) {
+      req.flash('error', 'Cannot find that campground!')
+      return res.redirect('/campgrounds')
+    }
     res.render('campgrounds/edit', { campground })
   }),
 )
 
 router.put(
   '/:id',
+  isLoggedIn,
+  isAuthor,
   validateCampground,
   catchAsync(async (req: Request, res: Response) => {
     const { campground } = req.body
     const { id } = req.params
-    const campgroundUpdate = await campgroundRepository.findOneBy({ id })
+    const campgroundUpdate = await campgroundRepository
+      .createQueryBuilder('campground')
+      .leftJoinAndSelect('campground.author', 'author')
+      .where('campground.id = :id', { id })
+      .getOne()
 
     if (!campgroundUpdate) {
       throw new Error('找不到該筆資料')
+    }
+
+    if (campgroundUpdate.author.id !== req.user?.id) {
+      req.flash('error', 'You do not have permission to do that')
+      return res.redirect(`/campgrounds/${id}`)
     }
 
     const campgroundProperties = Object.keys(campgroundUpdate)
@@ -99,6 +133,8 @@ router.put(
 
 router.delete(
   '/:id',
+  isLoggedIn,
+  isAuthor,
   catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params
     const campgroundToRemove = await campgroundRepository.findOneBy({ id })

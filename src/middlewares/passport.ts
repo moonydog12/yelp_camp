@@ -29,11 +29,11 @@ function setSerializeUser(user: any, done: CallableFunction) {
   done(null, user.id)
 }
 
-function setDeserializeUser(user: any, done: CallableFunction) {
-  if (!user) return
+function setDeserializeUser(id: any, done: CallableFunction) {
+  if (!id) return
   dataSource
     .getRepository(User)
-    .findOneBy({ id: user.id })
+    .findOneBy({ id })
     .then((data) => {
       done(null, data)
     })

@@ -6,6 +6,7 @@ import { reviewSchema } from '../models/schemas'
 import ExpressError from '../utils/ExpressError'
 import catchAsync from '../utils/catchAsync'
 import { dataSource } from '../db'
+import { isLoggedIn } from '../middlewares/auth'
 
 const router = express.Router({
   // 取得定義在之前路由的參數
@@ -26,6 +27,7 @@ function validateReview(req: Request, res: Response, next: NextFunction) {
 
 router.post(
   '/',
+  isLoggedIn,
   validateReview,
   catchAsync(async (req: Request, res: Response) => {
     const campground = await campgroundRepository.findOneBy({
@@ -42,6 +44,7 @@ router.post(
     newReview.body = review.body
     newReview.rating = review.rating
     newReview.campground = campground
+    newReview.author = req.user!.id
     await newReview.save()
     req.flash('success', 'Create new review')
     res.redirect(`/campgrounds/${campground.id}`)
