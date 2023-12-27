@@ -1,15 +1,21 @@
 {
-  "root": true,
   "env": {
+    "browser": true,
     "es2021": true
   },
-  "overrides": [],
   "extends": ["airbnb-base"],
+  "overrides": [],
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": "latest"
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "project": "./tsconfig.json"
   },
+  "plugins": ["@typescript-eslint"],
   "rules": {
-    "import/no-unresolved": "off",
-    "import/extensions": "off"
+    "semi": 0,
+    "import/no-unresolved": 0,
+    "import/extensions": 0,
+    "consistent-return": 0
   }
 }

@@ -17,7 +17,7 @@ import {
   setDeserializeUser,
   setSerializeUser,
 } from './middlewares/passport'
-import { SESSION_OPTION } from './config'
+import SESSION_OPTION from './config'
 import { setFlash } from './middlewares/auth'
 
 // 設置 middleware

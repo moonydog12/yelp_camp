@@ -3,7 +3,7 @@ import passport from 'passport'
 import bcrypt from 'bcryptjs'
 
 import { dataSource } from '../db'
-import { User } from '../models/User'
+import User from '../models/User'
 import { storeReturnTo } from '../middlewares/auth'
 import catchAsync from '../utils/catchAsync'
 

@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from 'express'
 
 import catchAsync from '../utils/catchAsync'
 import { dataSource } from '../db'
-import { Campground } from '../models/Campground'
+import Campground from '../models/Campground'
 import { campgroundSchema } from '../models/schemas'
 import ExpressError from '../utils/ExpressError'
 import { isLoggedIn } from '../middlewares/auth'
@@ -85,10 +85,12 @@ router.put(
       throw new Error('找不到該筆資料')
     }
 
-    for (const property in campground) {
-      ;(campgroundUpdate as any)[`${property}`] = campground[`${property}`]
+    const campgroundProperties = Object.keys(campgroundUpdate)
+    for (let i = 0; i < campgroundProperties.length; i += 1) {
+      const prop = campgroundProperties[i]
+      ;(campgroundUpdate as any)[`${prop}`] = campground[`${prop}`]
     }
-
+    ;(campgroundUpdate as any).id = id
     await campgroundRepository.save(campgroundUpdate)
     req.flash('success', 'Successfully updated campground')
     res.redirect(`/campgrounds/${id}`)

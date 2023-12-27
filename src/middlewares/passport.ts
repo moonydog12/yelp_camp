@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs'
 
 import { Strategy as LocalStrategy } from 'passport-local'
 import { dataSource } from '../db'
-import { User } from '../models/User'
+import User from '../models/User'
 
 const userRepo = dataSource.getRepository(User)
 
@@ -34,8 +34,8 @@ function setDeserializeUser(user: any, done: CallableFunction) {
   dataSource
     .getRepository(User)
     .findOneBy({ id: user.id })
-    .then((user) => {
-      done(null, user)
+    .then((data) => {
+      done(null, data)
     })
 }
 

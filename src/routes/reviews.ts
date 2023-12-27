@@ -1,11 +1,11 @@
 import express, { Request, Response, NextFunction } from 'express'
 
-import { Review } from '../models/Review'
+import Review from '../models/Review'
+import Campground from '../models/Campground'
 import { reviewSchema } from '../models/schemas'
 import ExpressError from '../utils/ExpressError'
 import catchAsync from '../utils/catchAsync'
 import { dataSource } from '../db'
-import { Campground } from '../models/Campground'
 
 const router = express.Router({
   // 取得定義在之前路由的參數

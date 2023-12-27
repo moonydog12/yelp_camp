@@ -1,16 +1,18 @@
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from 'typeorm'
+import {
+  Entity, Column, PrimaryGeneratedColumn, BaseEntity,
+} from 'typeorm'
 
 @Entity()
-export class User extends BaseEntity {
+export default class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string
+    id!: string
 
   @Column()
-  username!: string
+    username!: string
 
   @Column({ nullable: false, unique: true })
-  email!: string
+    email!: string
 
   @Column()
-  password!: string
+    password!: string
 }

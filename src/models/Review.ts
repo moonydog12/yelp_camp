@@ -5,21 +5,21 @@ import {
   ManyToOne,
   BaseEntity,
 } from 'typeorm'
-import { Campground } from './Campground'
+import Campground from './Campground'
 
 @Entity()
-export class Review extends BaseEntity {
+export default class Review extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string
+    id!: string
 
   @Column()
-  body!: string
+    body!: string
 
   @Column()
-  rating!: number
+    rating!: number
 
   @ManyToOne(() => Campground, (campground) => campground.reviews, {
     onDelete: 'CASCADE',
   })
-  campground!: Campground
+    campground!: Campground
 }

@@ -5,28 +5,28 @@ import {
   OneToMany,
   BaseEntity,
 } from 'typeorm'
-import { Review } from './Review'
+import Review from './Review'
 
 @Entity()
-export class Campground extends BaseEntity {
+export default class Campground extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string
+    id!: string
 
   @Column({ length: 100 })
-  title!: string
+    title!: string
 
   @Column()
-  price!: number
+    price!: number
 
   @Column()
-  description!: string
+    description!: string
 
   @Column()
-  location!: string
+    location!: string
 
   @Column()
-  image!: string
+    image!: string
 
   @OneToMany(() => Review, (review) => review.campground)
-  reviews!: Review[]
+    reviews!: Review[]
 }
