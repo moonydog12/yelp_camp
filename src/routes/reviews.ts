@@ -15,6 +15,16 @@ const router = express.Router({
 const campgroundRepository = dataSource.getRepository(Campground)
 const reviewRepository = dataSource.getRepository(Review)
 
+async function isReviewAuthor(req: Request, res: Response, next: NextFunction) {
+  const { id, reviewId } = req.params
+  const review = await reviewRepository.findOneBy({ id: reviewId })
+  if (review?.authorId !== req.user?.id) {
+    req.flash('error', "You don't have permission to do that")
+    return res.redirect(`/campgrounds/${id}`)
+  }
+  next()
+}
+
 function validateReview(req: Request, res: Response, next: NextFunction) {
   const { error } = reviewSchema.validate(req.body)
   if (error) {
@@ -44,7 +54,7 @@ router.post(
     newReview.body = review.body
     newReview.rating = review.rating
     newReview.campground = campground
-    newReview.author = req.user!.id
+    newReview.authorId = req.user!.id
     await newReview.save()
     req.flash('success', 'Create new review')
     res.redirect(`/campgrounds/${campground.id}`)
@@ -53,6 +63,8 @@ router.post(
 
 router.delete(
   '/:reviewId',
+  isLoggedIn,
+  isReviewAuthor,
   catchAsync(async (req: Request, res: Response) => {
     const review = await reviewRepository.findOneBy({ id: req.params.reviewId })
     if (!review) {

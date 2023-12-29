@@ -32,6 +32,6 @@ export default class Campground extends BaseEntity {
   @ManyToOne(() => User, (user) => user.id)
     author!: User
 
-  @OneToMany(() => Review, (review) => review.campground)
+  @OneToMany(() => Review, (review) => review.campground, { eager: true })
     reviews!: Review[]
 }

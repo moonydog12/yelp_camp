@@ -70,6 +70,7 @@ router.get(
       .createQueryBuilder('campground')
       .leftJoinAndSelect('campground.reviews', 'reviews')
       .leftJoinAndSelect('campground.author', 'author')
+      .leftJoinAndSelect('reviews.authorId', 'user')
       .where('campground.id = :id', { id })
       .getOne()
 
