@@ -19,6 +19,7 @@ import {
 } from './middlewares/passport'
 import SESSION_OPTION from './config'
 import { setFlash } from './middlewares/auth'
+import { connectToDB } from './db'
 
 // 設置 middleware
 const app = express()
@@ -56,4 +57,8 @@ app.all('*', (req, res, next) => {
 
 app.use(errorHandler)
 
-export default app
+connectToDB().then(() => {
+  app.listen(process.env.PORT, () => {
+    console.log(`listening on port ${process.env.PORT}`)
+  })
+})
