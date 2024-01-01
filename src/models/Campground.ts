@@ -12,26 +12,26 @@ import User from './User'
 @Entity()
 export default class Campground extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
-    id!: string
+  id!: string
 
   @Column({ length: 100 })
-    title!: string
+  title!: string
 
   @Column()
-    price!: number
+  price!: number
 
   @Column()
-    description!: string
+  description!: string
 
   @Column()
-    location!: string
+  location!: string
 
   @Column()
-    image!: string
+  image!: string
 
   @ManyToOne(() => User, (user) => user.id)
-    author!: User
+  author!: User
 
   @OneToMany(() => Review, (review) => review.campground, { eager: true })
-    reviews!: Review[]
+  reviews!: Review[]
 }
