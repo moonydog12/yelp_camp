@@ -19,7 +19,7 @@ import {
 } from './middlewares/passport'
 import SESSION_OPTION from './config'
 import { setFlash } from './middlewares/auth'
-import { connectToDB } from './db'
+import connection from './db'
 
 // 設置 middleware
 const app = express()
@@ -52,13 +52,12 @@ app.use('/campgrounds', campgroundRoutes)
 app.use('/campgrounds/:id/reviews', reviewRoutes)
 
 app.all('*', (req, res, next) => {
-  next(new ExpressError('沒有相關頁面', 404))
+  next(new ExpressError('No related pages', 404))
 })
 
 app.use(errorHandler)
 
-connectToDB().then(() => {
-  app.listen(process.env.PORT, () => {
-    console.log(`listening on port ${process.env.PORT}`)
-  })
+app.listen(process.env.PORT, async () => {
+  await connection.initialize()
+  console.log(`listening on port ${process.env.PORT}`)
 })

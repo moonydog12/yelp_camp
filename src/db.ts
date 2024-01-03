@@ -6,7 +6,7 @@ import User from './models/User'
 
 dotenv.config()
 
-const dataSource = new DataSource({
+const connection = new DataSource({
   type: 'postgres',
   host: process.env.PG_HOST,
   port: parseInt(process.env.PG_PORT || '5432', 10),
@@ -17,12 +17,4 @@ const dataSource = new DataSource({
   synchronize: true, // ! remove in prod
 })
 
-const connectToDB = async () => {
-  try {
-    await dataSource.initialize()
-  } catch (error: any) {
-    console.log(`Unable to connect to PostgreSQL (${error.message}) `)
-  }
-}
-
-export { connectToDB, dataSource }
+export default connection

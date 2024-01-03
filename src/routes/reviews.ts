@@ -1,24 +1,23 @@
 import express, { Request, Response, NextFunction } from 'express'
-
 import Review from '../models/Review'
-import Campground from '../models/Campground'
 import { reviewSchema } from '../models/schemas'
 import ExpressError from '../utils/ExpressError'
 import catchAsync from '../utils/catchAsync'
-import { dataSource } from '../db'
+import connection from '../db'
 import { isLoggedIn } from '../middlewares/auth'
+import reviewController from '../controller/review'
 
 const router = express.Router({
   // 取得定義在之前路由的參數
   mergeParams: true,
 })
-const campgroundRepository = dataSource.getRepository(Campground)
-const reviewRepository = dataSource.getRepository(Review)
+const reviewRepository = connection.getRepository(Review)
 
 async function isReviewAuthor(req: Request, res: Response, next: NextFunction) {
   const { id, reviewId } = req.params
   const review = await reviewRepository.findOneBy({ id: reviewId })
-  if (review?.authorId !== req.user?.id) {
+  if (review === null) throw new Error('Can not find the review')
+  if (review.authorId !== req.user!.id) {
     req.flash('error', "You don't have permission to do that")
     return res.redirect(`/campgrounds/${id}`)
   }
@@ -39,41 +38,14 @@ router.post(
   '/',
   isLoggedIn,
   validateReview,
-  catchAsync(async (req: Request, res: Response) => {
-    const campground = await campgroundRepository.findOneBy({
-      id: req.params.id,
-    })
-
-    // 先確定 campground 不是空值(ts 2322 錯誤)
-    if (!campground) {
-      throw new Error('找不到該筆資料')
-    }
-
-    const review = { ...req.body.review }
-    const newReview = new Review()
-    newReview.body = review.body
-    newReview.rating = review.rating
-    newReview.campground = campground
-    newReview.authorId = req.user!.id
-    await newReview.save()
-    req.flash('success', 'Create new review')
-    res.redirect(`/campgrounds/${campground.id}`)
-  }),
+  catchAsync(reviewController.createReview),
 )
 
 router.delete(
   '/:reviewId',
   isLoggedIn,
   isReviewAuthor,
-  catchAsync(async (req: Request, res: Response) => {
-    const review = await reviewRepository.findOneBy({ id: req.params.reviewId })
-    if (!review) {
-      throw new Error('找不到該筆資料')
-    }
-    await reviewRepository.remove(review)
-    req.flash('success', 'Delete review')
-    res.redirect(`/campgrounds/${req.params.id}`)
-  }),
+  catchAsync(reviewController.deleteReview),
 )
 
 export default router

@@ -1,23 +1,16 @@
 import express, { Request, Response, NextFunction } from 'express'
-
-import catchAsync from '../utils/catchAsync'
-import { dataSource } from '../db'
-import Campground from '../models/Campground'
 import { campgroundSchema } from '../models/schemas'
-import ExpressError from '../utils/ExpressError'
 import { isLoggedIn } from '../middlewares/auth'
-import {
-  createCampground,
-  getAllCampgrounds,
-  renderNewForm,
-  showCampground,
-  renderEditForm,
-  updateCampground,
-  deleteCampground,
-} from '../controller/campgrounds'
+import catchAsync from '../utils/catchAsync'
+import connection from '../db'
+import Campground from '../models/Campground'
+import ExpressError from '../utils/ExpressError'
+import campgroundController, {
+  CampgroundController,
+} from '../controller/campground'
 
 const router = express.Router()
-const campgroundRepository = dataSource.getRepository(Campground)
+const campgroundRepository = connection.getRepository(Campground)
 
 function validateCampground(req: Request, res: Response, next: NextFunction) {
   const { error } = campgroundSchema.validate(req.body)
@@ -46,24 +39,37 @@ async function isAuthor(req: Request, res: Response, next: NextFunction) {
   next()
 }
 
-router.get('/', catchAsync(getAllCampgrounds))
+router
+  .route('/')
+  .get(catchAsync(campgroundController.getAllCampgrounds))
+  .post(
+    validateCampground,
+    isLoggedIn,
+    catchAsync(campgroundController.createCampground),
+  )
 
-router.get('/new', isLoggedIn, renderNewForm)
+router.get('/new', isLoggedIn, CampgroundController.renderNewForm)
 
-router.post('/', validateCampground, isLoggedIn, catchAsync(createCampground))
+router
+  .route('/:id')
+  .get(catchAsync(campgroundController.showCampground))
+  .put(
+    isLoggedIn,
+    isAuthor,
+    validateCampground,
+    catchAsync(campgroundController.updateCampground),
+  )
+  .delete(
+    isLoggedIn,
+    isAuthor,
+    catchAsync(campgroundController.deleteCampground),
+  )
 
-router.get('/:id', catchAsync(showCampground))
-
-router.get('/:id/edit', isLoggedIn, isAuthor, catchAsync(renderEditForm))
-
-router.put(
-  '/:id',
+router.get(
+  '/:id/edit',
   isLoggedIn,
   isAuthor,
-  validateCampground,
-  catchAsync(updateCampground),
+  catchAsync(campgroundController.renderEditForm),
 )
-
-router.delete('/:id', isLoggedIn, isAuthor, catchAsync(deleteCampground))
 
 export default router
