@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express'
+import multer from 'multer'
 import { campgroundSchema } from '../models/schemas'
 import { isLoggedIn } from '../middlewares/auth'
 import catchAsync from '../utils/catchAsync'
@@ -8,7 +9,9 @@ import ExpressError from '../utils/ExpressError'
 import campgroundController, {
   CampgroundController,
 } from '../controller/campground'
+import { storage, cloudinaryConfig } from '../cloudinary'
 
+const upload = multer({ storage })
 const router = express.Router()
 const campgroundRepository = connection.getRepository(Campground)
 
@@ -43,8 +46,9 @@ router
   .route('/')
   .get(catchAsync(campgroundController.getAllCampgrounds))
   .post(
-    validateCampground,
     isLoggedIn,
+    validateCampground,
+    upload.array('image'),
     catchAsync(campgroundController.createCampground),
   )
 
