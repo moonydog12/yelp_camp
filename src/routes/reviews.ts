@@ -17,7 +17,7 @@ async function isReviewAuthor(req: Request, res: Response, next: NextFunction) {
   const { id, reviewId } = req.params
   const review = await reviewRepository.findOneBy({ id: reviewId })
   if (review === null) throw new Error('Can not find the review')
-  if (review.authorId !== req.user!.id) {
+  if (review.author !== req.user!.id) {
     req.flash('error', "You don't have permission to do that")
     return res.redirect(`/campgrounds/${id}`)
   }

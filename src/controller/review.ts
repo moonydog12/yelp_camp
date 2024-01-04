@@ -22,7 +22,7 @@ class ReviewController {
     newReview.body = review.body
     newReview.rating = review.rating
     newReview.campground = campground
-    newReview.authorId = req.user!.id
+    newReview.author = req.user!.id
     await newReview.save()
     req.flash('success', 'Create new review')
     res.redirect(`/campgrounds/${campground.id}`)

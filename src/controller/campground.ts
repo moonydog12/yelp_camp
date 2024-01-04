@@ -43,7 +43,7 @@ export class CampgroundController {
       .createQueryBuilder('campground')
       .leftJoinAndSelect('campground.reviews', 'reviews')
       .leftJoinAndSelect('campground.author', 'author')
-      .leftJoinAndSelect('reviews.authorId', 'user')
+      .leftJoinAndSelect('reviews.author', 'user')
       .where('campground.id = :id', { id })
       .getOne()
 

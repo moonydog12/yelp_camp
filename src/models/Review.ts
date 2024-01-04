@@ -4,7 +4,6 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   BaseEntity,
-  JoinColumn,
 } from 'typeorm'
 import Campground from './Campground'
 import User from './User'
@@ -27,5 +26,5 @@ export default class Review extends BaseEntity {
 
   @Column()
   @ManyToOne(() => User, (user) => user.id)
-  authorId!: string
+  author!: string
 }
