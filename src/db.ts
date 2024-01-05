@@ -14,7 +14,6 @@ const connection = new DataSource({
   password: process.env.PG_PASSWORD,
   database: process.env.PG_DATABASE,
   entities: [Campground, Review, User],
-  synchronize: true, // ! remove in prod
 })
 
 export default connection

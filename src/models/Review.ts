@@ -24,7 +24,6 @@ export default class Review extends BaseEntity {
   })
   campground!: Campground
 
-  @Column()
   @ManyToOne(() => User, (user) => user.id)
   author!: string
 }
