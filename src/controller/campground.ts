@@ -4,17 +4,6 @@ import Campground from '../models/Campground'
 
 interface ICampground {
   [key: string]: any
-  id: string
-  title: string
-  price: number
-  description: string
-  location: string
-  image: string
-  author: {
-    id: string
-    email: string
-    username: string
-  }
 }
 
 export class CampgroundController {

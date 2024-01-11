@@ -11,19 +11,22 @@ import User from './User'
 @Entity()
 export default class Review extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string
+    id!: string
 
   @Column()
-  body!: string
+    body!: string
 
   @Column()
-  rating!: number
+    rating!: number
+
+  @Column()
+    authorId!: string
 
   @ManyToOne(() => Campground, (campground) => campground.reviews, {
     onDelete: 'CASCADE',
   })
-  campground!: Campground
+    campground!: Campground
 
   @ManyToOne(() => User, (user) => user.id)
-  author!: string
+    author!: string
 }

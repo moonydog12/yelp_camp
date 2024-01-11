@@ -9,7 +9,7 @@ import ExpressError from '../utils/ExpressError'
 import campgroundController, {
   CampgroundController,
 } from '../controller/campground'
-import { storage, cloudinaryConfig } from '../cloudinary'
+import { storage } from '../cloudinary'
 
 const upload = multer({ storage })
 const router = express.Router()
@@ -20,9 +20,8 @@ function validateCampground(req: Request, res: Response, next: NextFunction) {
   if (error) {
     const errorMessages = error.details.map((el) => el.message).join(',')
     throw new ExpressError(errorMessages, 400)
-  } else {
-    next()
   }
+  next()
 }
 
 async function isAuthor(req: Request, res: Response, next: NextFunction) {
@@ -47,8 +46,8 @@ router
   .get(catchAsync(campgroundController.getAllCampgrounds))
   .post(
     isLoggedIn,
-    validateCampground,
     upload.array('image'),
+    validateCampground,
     catchAsync(campgroundController.createCampground),
   )
 

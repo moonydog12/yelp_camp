@@ -8,7 +8,6 @@ import { isLoggedIn } from '../middlewares/auth'
 import reviewController from '../controller/review'
 
 const router = express.Router({
-  // 取得定義在之前路由的參數
   mergeParams: true,
 })
 const reviewRepository = connection.getRepository(Review)
@@ -17,7 +16,7 @@ async function isReviewAuthor(req: Request, res: Response, next: NextFunction) {
   const { id, reviewId } = req.params
   const review = await reviewRepository.findOneBy({ id: reviewId })
   if (review === null) throw new Error('Can not find the review')
-  if (review.author !== req.user!.id) {
+  if (review.authorId !== req.user!.id) {
     req.flash('error', "You don't have permission to do that")
     return res.redirect(`/campgrounds/${id}`)
   }
@@ -29,9 +28,8 @@ function validateReview(req: Request, res: Response, next: NextFunction) {
   if (error) {
     const errorMessages = error.details.map((el) => el.message).join(',')
     throw new ExpressError(errorMessages, 400)
-  } else {
-    next()
   }
+  next()
 }
 
 router.post(

@@ -1,8 +1,6 @@
 import { DataSource } from 'typeorm'
+import path from 'path'
 import dotenv from 'dotenv'
-import Campground from './models/Campground'
-import Review from './models/Review'
-import User from './models/User'
 
 dotenv.config()
 
@@ -13,7 +11,7 @@ const connection = new DataSource({
   username: process.env.PG_USERNAME,
   password: process.env.PG_PASSWORD,
   database: process.env.PG_DATABASE,
-  entities: [Campground, Review, User],
+  entities: [path.join(__dirname, '../src/models/*.ts')],
 })
 
 export default connection

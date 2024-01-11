@@ -3,35 +3,35 @@ import {
   Column,
   PrimaryGeneratedColumn,
   OneToMany,
-  BaseEntity,
   ManyToOne,
 } from 'typeorm'
 import Review from './Review'
 import User from './User'
+import Image from './Image'
 
 @Entity()
-export default class Campground extends BaseEntity {
+export default class Campground {
   @PrimaryGeneratedColumn('uuid')
-  id!: string
+    id!: string
 
   @Column({ length: 100 })
-  title!: string
+    title!: string
 
   @Column()
-  price!: number
+    price!: number
 
   @Column()
-  description!: string
+    description!: string
 
   @Column()
-  location!: string
-
-  @Column()
-  image!: string
+    location!: string
 
   @ManyToOne(() => User, (user) => user.id)
-  author!: User
+    author!: User
 
   @OneToMany(() => Review, (review) => review.campground)
-  reviews!: Review[]
+    reviews!: Review[]
+
+  @OneToMany(() => Image, (image) => image.campground)
+    images!: Image[]
 }

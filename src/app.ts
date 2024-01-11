@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express'
 import path from 'path'
-import { json } from 'body-parser'
+import bodyParser from 'body-parser'
 import ejsMate from 'ejs-mate'
 import methodOverride from 'method-override'
 import expressSession from 'express-session'
@@ -27,7 +27,7 @@ app.engine('ejs', ejsMate)
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, '../src/views'))
 
-app.use(json())
+app.use(bodyParser.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(methodOverride('_method'))
 app.use(express.static(path.join(__dirname, '../src/public')))
@@ -57,7 +57,8 @@ app.all('*', (req, res, next) => {
 
 app.use(errorHandler)
 
-app.listen(process.env.PORT, async () => {
-  await connection.initialize()
-  console.log(`listening on port ${process.env.PORT}`)
+connection.initialize().then(() => {
+  app.listen(process.env.PORT, () => {
+    console.log(`listening on port ${process.env.PORT}`)
+  })
 })
