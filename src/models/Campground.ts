@@ -11,8 +11,8 @@ import Image from './Image'
 
 @Entity()
 export default class Campground {
-  @PrimaryGeneratedColumn('uuid')
-    id!: string
+  @PrimaryGeneratedColumn()
+    id!: number
 
   @Column({ length: 100 })
     title!: string

@@ -10,13 +10,14 @@ const localStrategy = new LocalStrategy(
   async (req, username, password, cb) => {
     try {
       const user = await userRepo.findOneBy({ email: username })
-      if (user === null) {
+      if (!user) {
         return cb(null, false, { message: 'This email is not registered' })
       }
       const isMatched = await bcrypt.compare(password, user.password)
-      if (isMatched === false) {
+      if (!isMatched) {
         return cb(null, false, { message: 'Email or password is incorrect' })
       }
+
       return cb(null, user)
     } catch (error) {
       cb(error)

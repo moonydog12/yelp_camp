@@ -44,9 +44,10 @@ export class CampgroundController {
   }
 
   renderEditForm = async (req: Request, res: Response) => {
-    const { id } = req.params
-    const campground = await this.repository.findOneBy({ id })
-    if (campground === null) {
+    const campground = await this.repository.findOneBy({
+      id: parseInt(req.params.id, 10),
+    })
+    if (!campground) {
       req.flash('error', 'Cannot find that campground!')
       return res.redirect('/campgrounds')
     }
@@ -58,11 +59,11 @@ export class CampgroundController {
     const { id } = req.params
     const campgroundUpdate: ICampground | null = await this.repository
       .createQueryBuilder('campground')
-      .leftJoinAndSelect('campground.author', 'author')
+      .leftJoinAndSelect('campground.author', 'authorId')
       .where('campground.id = :id', { id })
       .getOne()
 
-    if (campgroundUpdate === null) {
+    if (!campgroundUpdate) {
       throw new Error('Can not find the data')
     }
 
@@ -75,17 +76,18 @@ export class CampgroundController {
     campgroundProperties.forEach((prop) => {
       campgroundUpdate[prop] = campground[prop]
     })
-    campgroundUpdate.id = id
+    campgroundUpdate.id = parseInt(id, 10)
     await this.repository.save(campgroundUpdate)
     req.flash('success', 'Successfully updated campground')
     res.redirect(`/campgrounds/${id}`)
   }
 
   deleteCampground = async (req: Request, res: Response) => {
-    const { id } = req.params
-    const campgroundToRemove = await this.repository.findOneBy({ id })
+    const campgroundToRemove = await this.repository.findOneBy({
+      id: parseInt(req.params.idF, 10),
+    })
 
-    if (campgroundToRemove === null) {
+    if (!campgroundToRemove) {
       throw new Error('Can not find the data')
     }
 

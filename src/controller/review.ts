@@ -10,29 +10,30 @@ class ReviewController {
 
   createReview = async (req: Request, res: Response) => {
     const campground = await this.campgroundRepository.findOneBy({
-      id: req.params.id,
+      id: parseInt(req.params.id, 10),
     })
 
-    if (campground === null) {
+    if (!campground) {
       throw new Error('Can not find the data')
     }
 
     const review = { ...req.body.review }
-    const newReview = new Review()
-    newReview.body = review.body
-    newReview.rating = review.rating
+    const newReview = {} as any
+    Object.keys(review).forEach((key) => {
+      newReview[key] = review[key]
+    })
     newReview.campground = campground
     newReview.authorId = req.user!.id
-    await newReview.save()
+    this.reviewRepository.save(newReview)
     req.flash('success', 'Create new review')
     res.redirect(`/campgrounds/${campground.id}`)
   }
 
   deleteReview = async (req: Request, res: Response) => {
     const review = await this.reviewRepository.findOneBy({
-      id: req.params.reviewId,
+      id: parseInt(req.params.reviewId, 10),
     })
-    if (review === null) {
+    if (!review) {
       throw new Error('Can not find the data')
     }
     await this.reviewRepository.remove(review)

@@ -5,8 +5,8 @@ import Campground from './Campground'
 
 @Entity()
 export default class Image {
-  @PrimaryGeneratedColumn('increment')
-    id!: string
+  @PrimaryGeneratedColumn()
+    id!: number
 
   @Column()
     filename!: string

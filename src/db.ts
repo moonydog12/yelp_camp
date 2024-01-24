@@ -12,6 +12,8 @@ const connection = new DataSource({
   password: process.env.PG_PASSWORD,
   database: process.env.PG_DATABASE,
   entities: [path.join(__dirname, '../src/models/*.ts')],
+  synchronize: true,
+  logging: false,
 })
 
 export default connection

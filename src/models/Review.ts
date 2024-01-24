@@ -10,8 +10,8 @@ import User from './User'
 
 @Entity()
 export default class Review extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-    id!: string
+  @PrimaryGeneratedColumn()
+    id!: number
 
   @Column()
     body!: string

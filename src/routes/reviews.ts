@@ -14,7 +14,9 @@ const reviewRepository = connection.getRepository(Review)
 
 async function isReviewAuthor(req: Request, res: Response, next: NextFunction) {
   const { id, reviewId } = req.params
-  const review = await reviewRepository.findOneBy({ id: reviewId })
+  const review = await reviewRepository.findOneBy({
+    id: parseInt(reviewId, 10),
+  })
   if (review === null) throw new Error('Can not find the review')
   if (review.authorId !== req.user!.id) {
     req.flash('error', "You don't have permission to do that")
