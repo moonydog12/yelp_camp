@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import connection from '../db'
 import Campground from '../models/Campground'
 import Image from '../models/Image'
+import { cloudinaryConfig } from '../cloudinary'
 
 interface ICampground {
   [key: string]: any
@@ -12,9 +13,23 @@ export class CampgroundController {
 
   private imageRepository = connection.getRepository(Image)
 
+  saveFiles(array: any, id: any) {
+    array.forEach(async (file: any) => {
+      const fileToStore = {
+        url: file.path,
+        filename: file.filename,
+        campground: id,
+      }
+      await this.imageRepository.save(fileToStore)
+    })
+  }
+
   getAllCampgrounds = async (req: Request, res: Response) => {
-    const allCampgrounds = await this.campgroundRepository.find()
-    res.render('campgrounds/index', { campgrounds: allCampgrounds })
+    const campgrounds = await this.campgroundRepository
+      .createQueryBuilder('campground')
+      .leftJoinAndSelect('campground.images', 'images')
+      .getMany()
+    res.render('campgrounds/index', { campgrounds })
   }
 
   static renderNewForm(req: Request, res: Response) {
@@ -26,14 +41,7 @@ export class CampgroundController {
     const campground = { ...req.body.campground }
     campground.author = req.user?.id
     const storedCampground = await this.campgroundRepository.save(campground)
-    filesArray.map(async (file: any) => {
-      const fileToStore = {
-        url: file.path,
-        filename: file.filename,
-        campground: storedCampground.id,
-      }
-      this.imageRepository.save(fileToStore)
-    })
+    this.saveFiles(filesArray, storedCampground.id)
     req.flash('success', 'Successfully made a new campground')
     res.redirect(`/campgrounds/${campground.id}`)
   }
@@ -57,9 +65,11 @@ export class CampgroundController {
   }
 
   renderEditForm = async (req: Request, res: Response) => {
-    const campground = await this.campgroundRepository.findOneBy({
-      id: parseInt(req.params.id, 10),
-    })
+    const campground = await this.campgroundRepository
+      .createQueryBuilder('campground')
+      .leftJoinAndSelect('campground.images', 'images')
+      .where('campground.id = :id', { id: req.params.id })
+      .getOne()
     if (!campground) {
       req.flash('error', 'Cannot find that campground!')
       return res.redirect('/campgrounds')
@@ -70,6 +80,7 @@ export class CampgroundController {
   updateCampground = async (req: Request, res: Response) => {
     const { campground } = req.body
     const { id } = req.params
+    const filesArray = JSON.parse(JSON.stringify(req.files))
     const campgroundUpdate: ICampground | null = await this.campgroundRepository
       .createQueryBuilder('campground')
       .leftJoinAndSelect('campground.author', 'authorId')
@@ -77,7 +88,7 @@ export class CampgroundController {
       .getOne()
 
     if (!campgroundUpdate) {
-      throw new Error('Can not find the data')
+      throw new Error('Can not find the campground to update')
     }
 
     if (campgroundUpdate.author.id !== req.user?.id) {
@@ -90,7 +101,21 @@ export class CampgroundController {
       campgroundUpdate[prop] = campground[prop]
     })
     campgroundUpdate.id = parseInt(id, 10)
+    this.saveFiles(filesArray, campgroundUpdate.id)
     await this.campgroundRepository.save(campgroundUpdate)
+
+    if (req.body.deleteImages.length > 0) {
+      req.body.deleteImages.forEach(async (image: string) => {
+        const imageToDelete = await this.imageRepository.findOneBy({
+          filename: image,
+        })
+        if (!imageToDelete) {
+          throw new Error('Can not find the image to delete')
+        }
+        await this.imageRepository.remove(imageToDelete)
+        await cloudinaryConfig.uploader.destroy(image)
+      })
+    }
     req.flash('success', 'Successfully updated campground')
     res.redirect(`/campgrounds/${id}`)
   }

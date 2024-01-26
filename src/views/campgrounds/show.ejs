@@ -2,11 +2,7 @@
 <link rel="stylesheet" href="/css/starability.css" />
 <div class="row">
   <div class="col-6">
-    <div
-      id="campgroundCarousel"
-      class="carousel slide"
-      data-bs-ride="carousel"
-    >
+    <div id="campgroundCarousel" class="carousel slide" data-bs-ride="carousel">
       <div class="carousel-inner">
         <% campground.images.forEach((image,index) => { %>
         <div class="carousel-item <%= index === 0 ? 'active':'' %>">
