@@ -104,7 +104,7 @@ export class CampgroundController {
     this.saveFiles(filesArray, campgroundUpdate.id)
     await this.campgroundRepository.save(campgroundUpdate)
 
-    if (req.body.deleteImages.length > 0) {
+    if (req.body.deleteImages) {
       req.body.deleteImages.forEach(async (image: string) => {
         const imageToDelete = await this.imageRepository.findOneBy({
           filename: image,

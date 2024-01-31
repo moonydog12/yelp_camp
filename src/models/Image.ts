@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm'
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  VirtualColumn,
+} from 'typeorm'
 import Campground from './Campground'
 
 @Entity()
@@ -12,6 +18,13 @@ export default class Image {
   @Column()
     url!: string
 
-  @ManyToOne(() => Campground, (campground) => campground.images)
+  @VirtualColumn({
+    query: (entity: any) => `SELECT REPLACE(${entity}.url,'/upload','/upload/w_200')`,
+  })
+    thumbnail!: string
+
+  @ManyToOne(() => Campground, (campground) => campground.images, {
+    onDelete: 'CASCADE',
+  })
     campground!: Campground
 }
