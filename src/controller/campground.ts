@@ -1,8 +1,10 @@
-import { Request, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import connection from '../db'
 import Campground from '../models/Campground'
 import Image from '../models/Image'
 import { cloudinaryConfig } from '../cloudinary'
+import { campgroundSchema } from '../models/schemas'
+import ExpressError from '../utils/ExpressError'
 
 interface ICampground {
   [key: string]: any
@@ -13,6 +15,8 @@ export class CampgroundController {
 
   private imageRepository = connection.getRepository(Image)
 
+  private campgroundSchema = campgroundSchema
+
   saveFiles(array: any, id: any) {
     array.forEach(async (file: any) => {
       const fileToStore = {
@@ -22,6 +26,32 @@ export class CampgroundController {
       }
       await this.imageRepository.save(fileToStore)
     })
+  }
+
+  validateCampground = (req: Request, res: Response, next: NextFunction) => {
+    const { error } = this.campgroundSchema.validate(req.body)
+    if (error) {
+      const errorMessages = error.details.map((el) => el.message).join(',')
+      throw new ExpressError(errorMessages, 400)
+    }
+    next()
+  }
+
+  isAuthor = async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params
+    const campground = await this.campgroundRepository
+      .createQueryBuilder('campground')
+      .leftJoin('campground.author', 'author')
+      .addSelect(['author.id'])
+      .where('campground.id = :id', { id })
+      .getOne()
+
+    if (campground?.author.id !== req.user?.id) {
+      req.flash('error', 'You do not have permission to do that')
+      return res.redirect(`/campgrounds/${id}`)
+    }
+
+    next()
   }
 
   getAllCampgrounds = async (req: Request, res: Response) => {

@@ -1,12 +1,10 @@
-import express from 'express'
+import { Router } from 'express'
 import passport from 'passport'
-
 import userController, { UserController } from '../controller/user'
-
 import { storeReturnTo } from '../middlewares/auth'
 import catchAsync from '../utils/catchAsync'
 
-const router = express.Router()
+const router = Router()
 const passportAuthConfig = {
   failureRedirect: '/login',
   failureMessage: true,
