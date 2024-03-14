@@ -5,6 +5,7 @@ import Image from '../models/Image'
 import { cloudinaryConfig } from '../cloudinary'
 import { campgroundSchema } from '../models/schemas'
 import ExpressError from '../utils/ExpressError'
+import CampgroundService from '../services/campground.service'
 
 interface ICampground {
   [key: string]: any
@@ -54,11 +55,8 @@ export class CampgroundController {
     next()
   }
 
-  getAllCampgrounds = async (req: Request, res: Response) => {
-    const campgrounds = await this.campgroundRepository
-      .createQueryBuilder('campground')
-      .leftJoinAndSelect('campground.images', 'images')
-      .getMany()
+  static getAll = async (req: Request, res: Response) => {
+    const campgrounds = await CampgroundService.getAll()
     res.render('campgrounds/index', { campgrounds })
   }
 
@@ -66,12 +64,11 @@ export class CampgroundController {
     res.render('campgrounds/new')
   }
 
-  createCampground = async (req: Request, res: Response) => {
-    const filesArray = JSON.parse(JSON.stringify(req.files))
-    const campground = { ...req.body.campground }
-    campground.author = req.user?.id
-    const storedCampground = await this.campgroundRepository.save(campground)
-    this.saveFiles(filesArray, storedCampground.id)
+  static create = async (req: Request, res: Response) => {
+    const { files } = req
+    const { campground: data } = req.body
+    const id = req.user?.id
+    const campground = await CampgroundService.create(id, data, files)
     req.flash('success', 'Successfully made a new campground')
     res.redirect(`/campgrounds/${campground.id}`)
   }

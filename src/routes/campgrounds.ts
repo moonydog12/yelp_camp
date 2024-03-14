@@ -12,12 +12,12 @@ const router = Router()
 
 router
   .route('/')
-  .get(catchAsync(campgroundController.getAllCampgrounds))
+  .get(catchAsync(CampgroundController.getAll))
   .post(
     isLoggedIn,
     upload.array('image'),
     campgroundController.validateCampground,
-    catchAsync(campgroundController.createCampground),
+    catchAsync(CampgroundController.create),
   )
 
 router.get('/new', isLoggedIn, CampgroundController.renderNewForm)
