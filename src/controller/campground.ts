@@ -1,60 +1,7 @@
-import { Request, Response, NextFunction } from 'express'
-import connection from '../db'
-import Campground from '../models/Campground'
-import Image from '../models/Image'
-import { cloudinaryConfig } from '../cloudinary'
-import { campgroundSchema } from '../models/schemas'
-import ExpressError from '../utils/ExpressError'
+import { Request, Response } from 'express'
 import CampgroundService from '../services/campground.service'
 
-interface ICampground {
-  [key: string]: any
-}
-
 export class CampgroundController {
-  private campgroundRepository = connection.getRepository(Campground)
-
-  private imageRepository = connection.getRepository(Image)
-
-  private campgroundSchema = campgroundSchema
-
-  saveFiles(array: any, id: any) {
-    array.forEach(async (file: any) => {
-      const fileToStore = {
-        url: file.path,
-        filename: file.filename,
-        campground: id,
-      }
-      await this.imageRepository.save(fileToStore)
-    })
-  }
-
-  validateCampground = (req: Request, res: Response, next: NextFunction) => {
-    const { error } = this.campgroundSchema.validate(req.body)
-    if (error) {
-      const errorMessages = error.details.map((el) => el.message).join(',')
-      throw new ExpressError(errorMessages, 400)
-    }
-    next()
-  }
-
-  isAuthor = async (req: Request, res: Response, next: NextFunction) => {
-    const { id } = req.params
-    const campground = await this.campgroundRepository
-      .createQueryBuilder('campground')
-      .leftJoin('campground.author', 'author')
-      .addSelect(['author.id'])
-      .where('campground.id = :id', { id })
-      .getOne()
-
-    if (campground?.author.id !== req.user?.id) {
-      req.flash('error', 'You do not have permission to do that')
-      return res.redirect(`/campgrounds/${id}`)
-    }
-
-    next()
-  }
-
   static getAll = async (req: Request, res: Response) => {
     const campgrounds = await CampgroundService.getAll()
     res.render('campgrounds/index', { campgrounds })
@@ -65,38 +12,31 @@ export class CampgroundController {
   }
 
   static create = async (req: Request, res: Response) => {
-    const { files } = req
-    const { campground: data } = req.body
-    const id = req.user?.id
-    const campground = await CampgroundService.create(id, data, files)
+    const data = {
+      author: req.user?.id,
+      files: req.files,
+      campground: req.body.campground,
+    }
+    const campground = await CampgroundService.create(data)
     req.flash('success', 'Successfully made a new campground')
     res.redirect(`/campgrounds/${campground.id}`)
   }
 
-  showCampground = async (req: Request, res: Response) => {
+  static showCampground = async (req: Request, res: Response) => {
     const { id } = req.params
-    const campground = await this.campgroundRepository
-      .createQueryBuilder('campground')
-      .leftJoinAndSelect('campground.reviews', 'reviews')
-      .leftJoinAndSelect('campground.author', 'author')
-      .leftJoinAndSelect('campground.images', 'images')
-      .leftJoinAndSelect('reviews.author', 'user')
-      .where('campground.id = :id', { id })
-      .getOne()
+    const campground = await CampgroundService.getOne(id)
 
-    if (campground === null) {
+    if (!campground) {
       throw new Error('Can not find the data')
     }
 
     res.render('campgrounds/show', { campground })
   }
 
-  renderEditForm = async (req: Request, res: Response) => {
-    const campground = await this.campgroundRepository
-      .createQueryBuilder('campground')
-      .leftJoinAndSelect('campground.images', 'images')
-      .where('campground.id = :id', { id: req.params.id })
-      .getOne()
+  static renderEditForm = async (req: Request, res: Response) => {
+    const { id } = req.params
+    const campground = await CampgroundService.getEdit(id)
+
     if (!campground) {
       req.flash('error', 'Cannot find that campground!')
       return res.redirect('/campgrounds')
@@ -104,59 +44,44 @@ export class CampgroundController {
     res.render('campgrounds/edit', { campground })
   }
 
-  updateCampground = async (req: Request, res: Response) => {
-    const { campground } = req.body
+  static updateCampground = async (req: Request, res: Response) => {
+    const { campground: updatedData } = req.body
     const { id } = req.params
     const filesArray = JSON.parse(JSON.stringify(req.files))
-    const campgroundUpdate: ICampground | null = await this.campgroundRepository
-      .createQueryBuilder('campground')
-      .leftJoinAndSelect('campground.author', 'authorId')
-      .where('campground.id = :id', { id })
-      .getOne()
+    const campground = await CampgroundService.getOne(id)
 
-    if (!campgroundUpdate) {
+    if (!campground) {
       throw new Error('Can not find the campground to update')
     }
 
-    if (campgroundUpdate.author.id !== req.user?.id) {
+    if (campground.author.id !== req.user?.id) {
       req.flash('error', 'You do not have permission to do that')
       return res.redirect(`/campgrounds/${id}`)
     }
 
-    const campgroundProperties = Object.keys(campgroundUpdate)
-    campgroundProperties.forEach((prop) => {
-      campgroundUpdate[prop] = campground[prop]
-    })
-    campgroundUpdate.id = parseInt(id, 10)
-    this.saveFiles(filesArray, campgroundUpdate.id)
-    await this.campgroundRepository.save(campgroundUpdate)
-
-    if (req.body.deleteImages) {
-      req.body.deleteImages.forEach(async (image: string) => {
-        const imageToDelete = await this.imageRepository.findOneBy({
-          filename: image,
-        })
-        if (!imageToDelete) {
-          throw new Error('Can not find the image to delete')
-        }
-        await this.imageRepository.remove(imageToDelete)
-        await cloudinaryConfig.uploader.destroy(image)
-      })
+    const data = {
+      updatedData,
+      filesArray,
+      campground,
+      id,
+      deleteImage: req.body.deleteImages,
     }
+
+    const updatedCampground = await CampgroundService.update(data)
+
     req.flash('success', 'Successfully updated campground')
-    res.redirect(`/campgrounds/${id}`)
+    res.redirect(`/campgrounds/${updatedCampground.id}`)
   }
 
-  deleteCampground = async (req: Request, res: Response) => {
-    const campgroundToRemove = await this.campgroundRepository.findOneBy({
-      id: parseInt(req.params.id, 10),
-    })
+  static deleteCampground = async (req: Request, res: Response) => {
+    const { id } = req.params
+    const campground = await CampgroundService.getOne(id)
 
-    if (!campgroundToRemove) {
+    if (!campground) {
       throw new Error('Can not find the data')
     }
 
-    await this.campgroundRepository.remove(campgroundToRemove)
+    await CampgroundService.delete(campground)
     req.flash('success', 'Delete campground')
     res.redirect('/campgrounds')
   }

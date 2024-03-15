@@ -6,6 +6,7 @@ import campgroundController, {
   CampgroundController,
 } from '../controller/campground'
 import { storage } from '../cloudinary'
+import CampgroundService from '../services/campground.service'
 
 const upload = multer({ storage })
 const router = Router()
@@ -16,7 +17,7 @@ router
   .post(
     isLoggedIn,
     upload.array('image'),
-    campgroundController.validateCampground,
+    CampgroundService.validateCampground,
     catchAsync(CampgroundController.create),
   )
 
@@ -24,25 +25,25 @@ router.get('/new', isLoggedIn, CampgroundController.renderNewForm)
 
 router
   .route('/:id')
-  .get(catchAsync(campgroundController.showCampground))
+  .get(catchAsync(CampgroundController.showCampground))
   .put(
     isLoggedIn,
-    campgroundController.isAuthor,
+    CampgroundService.isAuthor,
     upload.array('image'),
-    campgroundController.validateCampground,
-    catchAsync(campgroundController.updateCampground),
+    CampgroundService.validateCampground,
+    catchAsync(CampgroundController.updateCampground),
   )
   .delete(
     isLoggedIn,
-    campgroundController.isAuthor,
-    catchAsync(campgroundController.deleteCampground),
+    CampgroundService.isAuthor,
+    catchAsync(CampgroundController.deleteCampground),
   )
 
 router.get(
   '/:id/edit',
   isLoggedIn,
-  campgroundController.isAuthor,
-  catchAsync(campgroundController.renderEditForm),
+  CampgroundService.isAuthor,
+  catchAsync(CampgroundController.renderEditForm),
 )
 
 export default router
