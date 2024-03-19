@@ -11,4 +11,4 @@ const SESSION_OPTION = {
   },
 }
 
-export default SESSION_OPTION
+export { SESSION_OPTION }

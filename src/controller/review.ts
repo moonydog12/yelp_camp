@@ -5,6 +5,7 @@ import ReviewService from '../services/review.service'
 export default class ReviewController {
   static createReview = async (req: Request, res: Response) => {
     const { id } = req.params
+    const userId = req.user?.id
     const campground = await CampgroundService.getOne(id)
 
     if (!campground) {
@@ -12,7 +13,7 @@ export default class ReviewController {
     }
 
     const { review } = req.body
-    const data = { review, campground }
+    const data = { review, campground, userId }
     await ReviewService.create(data)
 
     req.flash('success', 'Create new review')

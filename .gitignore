@@ -1,5 +1,4 @@
 dist
 node_modules
-*.env
-cities.ts
-seedHelpers.ts
+.env
+.vscode

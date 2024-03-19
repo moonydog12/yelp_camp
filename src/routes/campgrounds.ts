@@ -3,7 +3,7 @@ import multer from 'multer'
 import { isLoggedIn } from '../middlewares/auth'
 import catchAsync from '../utils/catchAsync'
 import CampgroundController from '../controller/campground'
-import { storage } from '../cloudinary'
+import { storage } from '../configs/cloudinaryConfigs'
 import CampgroundService from '../services/campground.service'
 
 const upload = multer({ storage })

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
-import { cloudinaryConfig } from '../cloudinary'
-import connection from '../db'
+import { cloudinaryConfig } from '../configs/cloudinaryConfigs'
+import connection from '../configs/db'
 import Campground from '../models/Campground'
 import Image from '../models/Image'
 import { campgroundSchema } from '../models/schemas'

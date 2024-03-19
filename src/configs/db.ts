@@ -11,7 +11,7 @@ const connection = new DataSource({
   username: process.env.PG_USERNAME,
   password: process.env.PG_PASSWORD,
   database: process.env.PG_DATABASE,
-  entities: [path.join(__dirname, '../src/models/*.ts')],
+  entities: [path.join(__dirname, '../models/*.js')],
   synchronize: true,
   logging: false,
 })

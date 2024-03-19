@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import bcrypt from 'bcryptjs'
-import connection from '../db'
+import connection from '../configs/db'
 import User from '../models/User'
 
 export class UserController {

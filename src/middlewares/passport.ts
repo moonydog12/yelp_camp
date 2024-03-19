@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs'
 import { Strategy as LocalStrategy } from 'passport-local'
-import connection from '../db'
+import connection from '../configs/db'
 import User from '../models/User'
 
 const userRepo = connection.getRepository(User)

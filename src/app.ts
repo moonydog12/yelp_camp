@@ -17,9 +17,9 @@ import {
   setDeserializeUser,
   setSerializeUser,
 } from './middlewares/passport'
-import SESSION_OPTION from './config'
+import { SESSION_OPTION } from './configs/constants'
 import { setFlash } from './middlewares/auth'
-import connection from './db'
+import connection from './configs/db'
 
 // 設置 middleware
 const app = express()

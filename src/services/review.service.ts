@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import connection from '../db'
+import connection from '../configs/db'
 import Review from '../models/Review'
 import { reviewSchema } from '../models/schemas'
 import ExpressError from '../utils/ExpressError'
@@ -35,10 +35,10 @@ export default class ReviewService {
   }
 
   static async create(data: any) {
-    const { review, campground } = data
+    const { review, campground, userId } = data
     const newReview = { ...review }
     newReview.campground = campground
-    newReview.authorId = campground.author.id
+    newReview.authorId = userId
     await reviewRepository.save(newReview)
   }
 
