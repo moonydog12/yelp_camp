@@ -1,7 +1,8 @@
 import { Router } from 'express'
 import catchAsync from '../utils/catchAsync'
 import { isLoggedIn } from '../middlewares/auth'
-import reviewController from '../controller/review'
+import ReviewController from '../controller/review'
+import ReviewService from '../services/review.service'
 
 const router = Router({
   mergeParams: true,
@@ -10,15 +11,15 @@ const router = Router({
 router.post(
   '/',
   isLoggedIn,
-  reviewController.validateReview,
-  catchAsync(reviewController.createReview),
+  ReviewService.validate,
+  catchAsync(ReviewController.createReview),
 )
 
 router.delete(
   '/:reviewId',
   isLoggedIn,
-  reviewController.isReviewAuthor,
-  catchAsync(reviewController.deleteReview),
+  ReviewService.checkAuthor,
+  catchAsync(ReviewController.deleteReview),
 )
 
 export default router

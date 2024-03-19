@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
 import CampgroundService from '../services/campground.service'
 
-export class CampgroundController {
-  static getAll = async (req: Request, res: Response) => {
+export default class CampgroundController {
+  static async getAll(req: Request, res: Response) {
     const campgrounds = await CampgroundService.getAll()
     res.render('campgrounds/index', { campgrounds })
   }
@@ -11,7 +11,7 @@ export class CampgroundController {
     res.render('campgrounds/new')
   }
 
-  static create = async (req: Request, res: Response) => {
+  static async create(req: Request, res: Response) {
     const data = {
       author: req.user?.id,
       files: req.files,
@@ -22,7 +22,7 @@ export class CampgroundController {
     res.redirect(`/campgrounds/${campground.id}`)
   }
 
-  static showCampground = async (req: Request, res: Response) => {
+  static async showCampground(req: Request, res: Response) {
     const { id } = req.params
     const campground = await CampgroundService.getOne(id)
 
@@ -33,7 +33,7 @@ export class CampgroundController {
     res.render('campgrounds/show', { campground })
   }
 
-  static renderEditForm = async (req: Request, res: Response) => {
+  static async renderEditForm(req: Request, res: Response) {
     const { id } = req.params
     const campground = await CampgroundService.getEdit(id)
 
@@ -44,7 +44,7 @@ export class CampgroundController {
     res.render('campgrounds/edit', { campground })
   }
 
-  static updateCampground = async (req: Request, res: Response) => {
+  static async updateCampground(req: Request, res: Response) {
     const { campground: updatedData } = req.body
     const { id } = req.params
     const filesArray = JSON.parse(JSON.stringify(req.files))
@@ -73,7 +73,7 @@ export class CampgroundController {
     res.redirect(`/campgrounds/${updatedCampground.id}`)
   }
 
-  static deleteCampground = async (req: Request, res: Response) => {
+  static async deleteCampground(req: Request, res: Response) {
     const { id } = req.params
     const campground = await CampgroundService.getOne(id)
 
@@ -86,7 +86,3 @@ export class CampgroundController {
     res.redirect('/campgrounds')
   }
 }
-
-const campgroundController = new CampgroundController()
-
-export default campgroundController

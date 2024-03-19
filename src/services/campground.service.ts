@@ -21,11 +21,7 @@ export default class CampgroundService {
     })
   }
 
-  static validateCampground = (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => {
+  static validateCampground(req: Request, res: Response, next: NextFunction) {
     const { error } = campgroundSchema.validate(req.body)
     if (error) {
       const errorMessages = error.details.map((el) => el.message).join(',')
@@ -34,7 +30,7 @@ export default class CampgroundService {
     next()
   }
 
-  static isAuthor = async (req: Request, res: Response, next: NextFunction) => {
+  static async isAuthor(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params
     const campground = await campgroundRepository
       .createQueryBuilder('campground')
@@ -67,6 +63,7 @@ export default class CampgroundService {
     campgroundToStore.author = author
     const storedCampground = await campgroundRepository.save(campgroundToStore)
     this.saveFiles(filesArray, storedCampground.id)
+
     return storedCampground
   }
 
@@ -116,6 +113,7 @@ export default class CampgroundService {
     }
 
     await campgroundRepository.save(campground)
+
     return campground
   }
 

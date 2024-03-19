@@ -2,9 +2,7 @@ import { Router } from 'express'
 import multer from 'multer'
 import { isLoggedIn } from '../middlewares/auth'
 import catchAsync from '../utils/catchAsync'
-import campgroundController, {
-  CampgroundController,
-} from '../controller/campground'
+import CampgroundController from '../controller/campground'
 import { storage } from '../cloudinary'
 import CampgroundService from '../services/campground.service'
 
