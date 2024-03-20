@@ -9,15 +9,38 @@ import ExpressError from '../utils/ExpressError'
 const campgroundRepository = connection.getRepository(Campground)
 const imageRepository = connection.getRepository(Image)
 
+interface File {
+  fieldname: string
+  originalname: string
+  encoding: string
+  mimetype: string
+  path: string
+  size: number
+  filename: string
+}
+
 export default class CampgroundService {
-  static saveFiles(array: any, id: any) {
-    array.forEach(async (file: any) => {
+  static saveFiles(array: File[], id: Campground) {
+    array.forEach(async (file: File) => {
       const fileToStore = {
         url: file.path,
         filename: file.filename,
         campground: id,
       }
       await imageRepository.save(fileToStore)
+    })
+  }
+
+  static deleteImages(images: string[]) {
+    images.forEach(async (image: string) => {
+      const imageToDelete = await imageRepository.findOneBy({
+        filename: image,
+      })
+      if (!imageToDelete) {
+        throw new Error('Can not find the image to delete')
+      }
+      await imageRepository.remove(imageToDelete)
+      await cloudinaryConfig.uploader.destroy(image)
     })
   }
 
@@ -39,7 +62,11 @@ export default class CampgroundService {
       .where('campground.id = :id', { id })
       .getOne()
 
-    if (campground?.author.id !== req.user?.id) {
+    if (!campground) {
+      throw new Error('Can not find the data')
+    }
+
+    if (campground.author.id !== req.user.id) {
       req.flash('error', 'You do not have permission to do that')
       return res.redirect(`/campgrounds/${id}`)
     }
@@ -47,7 +74,7 @@ export default class CampgroundService {
     next()
   }
 
-  static async getAll() {
+  static async get() {
     const campgrounds = await campgroundRepository
       .createQueryBuilder('campground')
       .leftJoinAndSelect('campground.images', 'images')
@@ -61,10 +88,10 @@ export default class CampgroundService {
     const filesArray = JSON.parse(JSON.stringify(files))
     const campgroundToStore = { ...campground }
     campgroundToStore.author = author
-    const storedCampground = await campgroundRepository.save(campgroundToStore)
-    this.saveFiles(filesArray, storedCampground.id)
+    const newCampground = await campgroundRepository.save(campgroundToStore)
+    this.saveFiles(filesArray, newCampground.id)
 
-    return storedCampground
+    return newCampground
   }
 
   static async getOne(id: string) {
@@ -77,21 +104,15 @@ export default class CampgroundService {
       .where('campground.id = :id', { id })
       .getOne()
 
-    return campground
-  }
-
-  static async getEdit(id: string) {
-    const campground = campgroundRepository
-      .createQueryBuilder('campground')
-      .leftJoinAndSelect('campground.images', 'images')
-      .where('campground.id = :id', { id })
-      .getOne()
+    if (!campground) {
+      throw new Error('Can not find the data')
+    }
 
     return campground
   }
 
   static async update(data: any) {
-    const { updatedData, campground, id, filesArray, deleteImages } = data
+    const { updatedData, campground, id, filesArray, images } = data
     const campgroundProperties = Object.keys(campground)
     campgroundProperties.forEach((prop) => {
       campground[prop] = updatedData[prop]
@@ -99,17 +120,8 @@ export default class CampgroundService {
     campground.id = parseInt(id, 10)
     this.saveFiles(filesArray, campground.id)
 
-    if (deleteImages) {
-      deleteImages.forEach(async (image: string) => {
-        const imageToDelete = await imageRepository.findOneBy({
-          filename: image,
-        })
-        if (!imageToDelete) {
-          throw new Error('Can not find the image to delete')
-        }
-        await imageRepository.remove(imageToDelete)
-        await cloudinaryConfig.uploader.destroy(image)
-      })
+    if (images) {
+      this.deleteImages(images)
     }
 
     await campgroundRepository.save(campground)
@@ -118,6 +130,11 @@ export default class CampgroundService {
   }
 
   static async delete(data: any) {
-    campgroundRepository.remove(data)
+    const images = data.images.map((image: File) => image.filename)
+    if (images) {
+      this.deleteImages(images)
+    }
+
+    await campgroundRepository.remove(data)
   }
 }

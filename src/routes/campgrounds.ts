@@ -11,7 +11,7 @@ const router = Router()
 
 router
   .route('/')
-  .get(catchAsync(CampgroundController.getAll))
+  .get(catchAsync(CampgroundController.get))
   .post(
     isLoggedIn,
     upload.array('image'),
@@ -19,29 +19,29 @@ router
     catchAsync(CampgroundController.create),
   )
 
-router.get('/new', isLoggedIn, CampgroundController.renderNewForm)
+router.get('/new', isLoggedIn, CampgroundController.renderNew)
 
 router
   .route('/:id')
-  .get(catchAsync(CampgroundController.showCampground))
+  .get(catchAsync(CampgroundController.show))
   .put(
     isLoggedIn,
     CampgroundService.isAuthor,
     upload.array('image'),
     CampgroundService.validateCampground,
-    catchAsync(CampgroundController.updateCampground),
+    catchAsync(CampgroundController.update),
   )
   .delete(
     isLoggedIn,
     CampgroundService.isAuthor,
-    catchAsync(CampgroundController.deleteCampground),
+    catchAsync(CampgroundController.delete),
   )
 
 router.get(
   '/:id/edit',
   isLoggedIn,
   CampgroundService.isAuthor,
-  catchAsync(CampgroundController.renderEditForm),
+  catchAsync(CampgroundController.renderEdit),
 )
 
 export default router
