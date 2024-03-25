@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
+import mapboxGeocoding from '@mapbox/mapbox-sdk/services/geocoding'
 import { cloudinaryConfig } from '../configs/cloudinaryConfigs'
 import connection from '../configs/db'
 import Campground from '../models/Campground'
@@ -8,6 +9,10 @@ import ExpressError from '../utils/ExpressError'
 
 const campgroundRepository = connection.getRepository(Campground)
 const imageRepository = connection.getRepository(Image)
+const mapboxToken = process.env.MAPBOX_TOKEN
+const geocoder = mapboxGeocoding({
+  accessToken: mapboxToken!,
+})
 
 interface File {
   fieldname: string
@@ -85,6 +90,10 @@ export default class CampgroundService {
 
   static async create(data: any) {
     const { files, campground, author } = data
+    const geoData = await geocoder
+      .forwardGeocode({ query: campground.location, limit: 1 })
+      .send()
+
     const filesArray = JSON.parse(JSON.stringify(files))
     const campgroundToStore = { ...campground }
     campgroundToStore.author = author
