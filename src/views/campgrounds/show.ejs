@@ -1,6 +1,8 @@
 <% layout('/layouts/boilerplate') %>
 <link rel="stylesheet" href="/css/starability.css" />
+
 <div class="row">
+  <div id="map" style="width: 300px; height: 300px"></div>
   <div class="col-6">
     <div id="campgroundCarousel" class="carousel slide" data-bs-ride="carousel">
       <div class="carousel-inner">
@@ -150,3 +152,10 @@
     <% } %>
   </div>
 </div>
+<script>
+  const mapToken = '<%- process.env.MAPBOX_TOKEN %>'
+  const title = '<%- campground.title %>'
+  const coordinates = '<%- campground.point.coordinates %>'
+  const [longitude, latitude] = coordinates.split(',')
+</script>
+<script src="/js/showPageMap.js"></script>

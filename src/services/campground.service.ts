@@ -84,7 +84,6 @@ export default class CampgroundService {
       .createQueryBuilder('campground')
       .leftJoinAndSelect('campground.images', 'images')
       .getMany()
-
     return campgrounds
   }
 
@@ -93,10 +92,14 @@ export default class CampgroundService {
     const geoData = await geocoder
       .forwardGeocode({ query: campground.location, limit: 1 })
       .send()
-
+    const [longitude, latitude] = geoData.body.features[0].geometry.coordinates
     const filesArray = JSON.parse(JSON.stringify(files))
     const campgroundToStore = { ...campground }
     campgroundToStore.author = author
+    campgroundToStore.point = {
+      type: geoData.body.features[0].geometry.type,
+      coordinates: [longitude, latitude],
+    }
     const newCampground = await campgroundRepository.save(campgroundToStore)
     this.saveFiles(filesArray, newCampground.id)
 
