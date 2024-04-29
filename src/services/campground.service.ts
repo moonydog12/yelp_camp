@@ -96,7 +96,7 @@ export default class CampgroundService {
     const filesArray = JSON.parse(JSON.stringify(files))
     const campgroundToStore = { ...campground }
     campgroundToStore.author = author
-    campgroundToStore.point = {
+    campgroundToStore.geometry = {
       type: geoData.body.features[0].geometry.type,
       coordinates: [longitude, latitude],
     }

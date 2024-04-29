@@ -27,7 +27,7 @@ export default class Campground {
     location!: string
 
   @Column('geometry')
-    point!:string
+    geometry!:string
 
   @ManyToOne(() => User, (user) => user.id)
     author!: User

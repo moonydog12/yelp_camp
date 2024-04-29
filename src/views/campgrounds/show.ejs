@@ -155,7 +155,7 @@
 <script>
   const mapToken = '<%- process.env.MAPBOX_TOKEN %>'
   const title = '<%- campground.title %>'
-  const coordinates = '<%- campground.point.coordinates %>'
+  const coordinates = '<%- campground.geometry.coordinates %>'
   const [longitude, latitude] = coordinates.split(',')
 </script>
 <script src="/js/showPageMap.js"></script>
