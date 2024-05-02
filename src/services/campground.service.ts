@@ -50,6 +50,7 @@ export default class CampgroundService {
   }
 
   static validateCampground(req: Request, res: Response, next: NextFunction) {
+    console.log(req.body)
     const { error } = campgroundSchema.validate(req.body)
     if (error) {
       const errorMessages = error.details.map((el) => el.message).join(',')
@@ -124,7 +125,7 @@ export default class CampgroundService {
   }
 
   static async update(data: any) {
-    const { updatedData, campground, id, filesArray, images } = data
+    const { updatedData, campground, id, filesArray, deleteImages } = data
     const campgroundProperties = Object.keys(campground)
     campgroundProperties.forEach((prop) => {
       campground[prop] = updatedData[prop]
@@ -132,8 +133,8 @@ export default class CampgroundService {
     campground.id = parseInt(id, 10)
     this.saveFiles(filesArray, campground.id)
 
-    if (images) {
-      this.deleteImages(images)
+    if (deleteImages.length > 0) {
+      this.deleteImages(deleteImages)
     }
 
     await campgroundRepository.save(campground)

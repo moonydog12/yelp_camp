@@ -46,13 +46,12 @@ export default class CampgroundController {
       req.flash('error', 'You do not have permission to do that')
       return res.redirect(`/campgrounds/${id}`)
     }
-
     const data = {
       updatedData,
       filesArray,
       campground,
       id,
-      images: req.body.images,
+      deleteImages: req.body.deleteImages,
     }
 
     const updatedCampground = await CampgroundService.update(data)
