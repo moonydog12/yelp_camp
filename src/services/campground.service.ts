@@ -50,7 +50,6 @@ export default class CampgroundService {
   }
 
   static validateCampground(req: Request, res: Response, next: NextFunction) {
-    console.log(req.body)
     const { error } = campgroundSchema.validate(req.body)
     if (error) {
       const errorMessages = error.details.map((el) => el.message).join(',')
@@ -133,7 +132,7 @@ export default class CampgroundService {
     campground.id = parseInt(id, 10)
     this.saveFiles(filesArray, campground.id)
 
-    if (deleteImages.length > 0) {
+    if (deleteImages) {
       this.deleteImages(deleteImages)
     }
 
