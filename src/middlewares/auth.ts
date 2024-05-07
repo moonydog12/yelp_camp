@@ -6,6 +6,7 @@ interface MySession extends Session {
 }
 
 function isLoggedIn(req: Request, res: Response, next: NextFunction) {
+  // 若使用者尚未通過驗證，則將使用者導向登入頁面
   if (!req.isAuthenticated()) {
     ;(req.session as MySession).returnTo = req.originalUrl
     req.flash('error', 'you must be signed in')
